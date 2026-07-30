@@ -1,0 +1,293 @@
+/* ===========================================
+   Astrocronopio — Evelyn Coronel
+   Shared stylesheet
+   =========================================== */
+
+/* ---------- Reset & Base ---------- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1.8;
+    color: #e0e0e0;
+    min-height: 100vh;
+}
+
+/* Per-page backgrounds */
+body.home {
+    background-image: url("./media/wallpaper/totoro-scene-hd.jpg");
+}
+body.about {
+    background-image: url("./media/wallpaper/matrix_room_hd.jpeg");
+}
+
+/* ---------- Layout ---------- */
+.container {
+    width: 75%;
+    margin: 20px auto 0;
+    max-width: 900px;
+}
+
+.overlay {
+    background-color: rgba(0, 0, 0, 0.867);
+    padding: 30px;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* ---------- Navigation ---------- */
+.nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+    margin-bottom: 24px;
+}
+
+.site-brand h2 {
+    font-size: 1.2em;
+    font-weight: normal;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.page-tagline {
+    font-size: 0.78em;
+    display: block;
+    font-style: italic;
+}
+
+.home-tagline {
+    color: rgb(135, 118, 204);
+}
+
+.office-tagline {
+    color: rgb(238, 148, 57);
+}
+
+.nav-links a {
+    font-weight: bold;
+    text-decoration: none;
+    margin-left: 18px;
+    font-size: 0.95em;
+    transition: opacity 0.2s;
+}
+
+.nav-links a:hover {
+    opacity: 0.8;
+}
+
+.nav-links a.active {
+    text-decoration: underline;
+}
+
+/* Page-specific nav link colors */
+body.home .nav-links a  { color: rgb(135, 118, 204); }
+body.about .nav-links a { color: rgb(238, 148, 57); }
+
+/* ---------- Typography ---------- */
+h1, h2, h3, h4 {
+    margin-bottom: 12px;
+    font-weight: normal;
+}
+
+h2 {
+    font-size: 1.4em;
+}
+
+h3 {
+    font-size: 1.1em;
+}
+
+p {
+    margin-bottom: 16px;
+    font-size: 1em;
+}
+
+/* ---------- Links ---------- */
+a {
+    transition: opacity 0.2s;
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+/* ---------- Intro / Disclaimer ---------- */
+.intro {
+    color: rgb(159, 107, 107);
+    font-style: italic;
+    font-size: 1.05em;
+}
+
+/* ---------- Blog / Writing entries ---------- */
+.writing-list {
+    list-style: none;
+    padding: 0;
+}
+
+.writing-list li {
+    margin-bottom: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.writing-list li:last-child {
+    border-bottom: none;
+}
+
+.writing-link {
+    color: rgb(243, 234, 234);
+    text-decoration: none;
+    font-size: 1em;
+}
+
+.writing-date {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85em;
+    margin-left: 8px;
+}
+
+/* Divider between new & old writings */
+.writing-divider {
+    list-style: none;
+    border: none;
+    padding: 12px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.writing-divider::before,
+.writing-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.writing-divider span {
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+/* ---------- Writing pages ---------- */
+.writing-title {
+    font-size: 1.8em;
+    margin-bottom: 24px;
+    line-height: 1.3;
+}
+
+.writing-body {
+    font-size: 1.1em;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.writing-body p {
+    margin-bottom: 1.6em;
+    text-indent: 0;
+}
+
+.writing-ascii {
+    text-align: center;
+    padding: 40px 0 10px;
+    font-size: 0.85em;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.2);
+    white-space: pre;
+    font-family: monospace;
+}
+
+/* ---------- External / Persona links ---------- */
+.section-title {
+    color: rgb(200, 180, 220);
+    font-size: 1.2em;
+    margin-top: 20px;
+}
+
+.link-list {
+    list-style: none;
+    padding: 0;
+}
+
+.link-list li {
+    margin-bottom: 6px;
+}
+
+.link-list a {
+    color: rgb(243, 234, 234);
+    text-decoration: none;
+    font-size: 1em;
+}
+
+.link-list a:hover {
+    opacity: 0.7;
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+    text-align: center;
+    padding: 20px 0;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.85em;
+}
+
+.site-footer span {
+    margin: 0 10px;
+}
+
+/* ---------- Media Queries ---------- */
+@media only screen and (max-width: 600px) {
+    .container {
+        width: 92%;
+    }
+
+    .overlay {
+        padding: 18px;
+    }
+
+    .nav-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .nav-links a {
+        margin-left: 0;
+        margin-right: 14px;
+    }
+
+    p {
+        font-size: 16px;
+        line-height: 1.6;
+    }
+}
+
+@media only screen and (min-width: 601px) and (max-width: 1024px) {
+    .container {
+        width: 85%;
+    }
+
+    p {
+        font-size: 18px;
+        line-height: 1.7;
+    }
+}
+
+@media only screen and (min-width: 1025px) {
+    p {
+        font-size: 20px;
+        line-height: 1.8;
+    }
+}
