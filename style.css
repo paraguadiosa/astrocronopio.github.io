@@ -181,6 +181,34 @@ a:hover {
     color: rgba(255, 255, 255, 0.25);
 }
 
+/* ---------- Writing pages ---------- */
+.writing-title {
+    font-size: 1.8em;
+    margin-bottom: 24px;
+    line-height: 1.3;
+}
+
+.writing-body {
+    font-size: 1.1em;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.writing-body p {
+    margin-bottom: 1.6em;
+    text-indent: 0;
+}
+
+.writing-ascii {
+    text-align: center;
+    padding: 40px 0 10px;
+    font-size: 0.85em;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.2);
+    white-space: pre;
+    font-family: monospace;
+}
+
 /* ---------- External / Persona links ---------- */
 .section-title {
     color: rgb(200, 180, 220);
