@@ -209,6 +209,33 @@ a:hover {
     font-family: monospace;
 }
 
+/* ---------- Blog post pages ---------- */
+.blog-back {
+    color: rgb(238, 148, 57);
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.writing-meta {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85em;
+    margin-bottom: 24px;
+}
+
+.writing-code {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 3px solid rgb(238, 148, 57);
+    padding: 14px 16px;
+    margin: 0 0 1.6em;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+    color: rgb(243, 234, 234);
+}
+
 /* ---------- External / Persona links ---------- */
 .section-title {
     color: rgb(200, 180, 220);
