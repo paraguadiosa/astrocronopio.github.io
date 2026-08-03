@@ -36,13 +36,13 @@
                     I built my own local AI assistant using Hermes, a full agent, with a Discord frontend, a systemd
                     service, and a personality of "Moria Casán impersonating a supercomputer" - I called it DIVA.  
                 </p>   
-                <p>    
+                <p>
                     Hardware:  Win Mini 2025, AMD Ryzen AI 9, Radeon 890M integrated GPU, 64GB unified memory,
                     Nobara Linux. Best results: 17 t/s with a 9B model, 4 t/s with a 27B. Fun experiment.
                     I still ended up using the DeepSeek API.
                 </p>
 
-                                <figure class="writing-figure">
+                <figure class="writing-figure">
                     <img class="writing-image" src="win-mini-local.png" alt="Local inference on the Win Mini 2025">
                     <figcaption>Local inference on the Win Mini 2025.</figcaption>
                 </figure>
@@ -99,7 +99,7 @@ cmake --build build --config Release -j$(nproc)</pre>
                 <h3>The part I did not want to admit</h3>
                 <p>
                     17 t/s is fine for a bot that answers when it feels like it, terrible for my workflow.
-                    I work in long sessions: context that grows to tens of thousands of tokens, iterative
+                    I work in long sessions: context that grows, iterative
                     edits, questions that need the model to have read the whole repo. At 17 t/s with 70k of
                     context, every turn costs minutes, the fans spin up and my husband gets to a pretty 90 Celsius, 
                     and I start optimising my questions instead of my code.
@@ -116,12 +116,12 @@ cmake --build build --config Release -j$(nproc)</pre>
                 <p>
                     DeepSeek V4 Flash via API: answers in seconds instead of minutes, quality at or above the
                     local 9B, zero hardware babysitting, and a cost per token that is trivial compared to my
-                    time. The tradeoff: my prompts leave my house. I still run a mix of local and API.
+                    time. The tradeoff: my prompts leave my win mini. I still run a mix of local and API.
                 </p>
 
                 <h3>Second chance: from server to lab</h3>
                 <p>
-                    The Win Mini did not retire. It went from "production assistant" to lab: finetuning
+                    The win mini did not retire but it went from server to lab: finetuning
                     experiments with unsloth, axolotl on ROCm, model evaluation. That is where a slow machine
                     is fine and privacy is a feature, hopefully next blog.
                 </p>
@@ -130,6 +130,10 @@ cmake --build build --config Release -j$(nproc)</pre>
                     practical choice is the reliable one.
                 </p>
 
+                <figure class="writing-figure">
+                    <img class="writing-image" src="20260301_144201.jpg" alt="Local inference on the Win Mini 2025">
+                    <figcaption>My battle station also runs games.</figcaption>
+                </figure>
 
             </div>
         </div>
