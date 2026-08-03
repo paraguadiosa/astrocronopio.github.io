@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Function to get the version of the website
     function getVersion() {
-        return "4.0.0";
+        return "4.1.0";
     }
 
     // Update the 'last-updated' span with the current date and time

@@ -199,6 +199,15 @@ a:hover {
     text-indent: 0;
 }
 
+.writing-body h3 {
+    color: rgb(238, 148, 57);
+    font-size: 1.15em;
+    margin: 28px 0 10px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(238, 148, 57, 0.3);
+    padding-bottom: 6px;
+}
+
 .writing-ascii {
     text-align: center;
     padding: 40px 0 10px;
@@ -207,6 +216,53 @@ a:hover {
     color: rgba(255, 255, 255, 0.2);
     white-space: pre;
     font-family: monospace;
+}
+
+/* ---------- Blog post pages ---------- */
+.blog-back {
+    color: rgb(238, 148, 57);
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.writing-meta {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85em;
+    margin-bottom: 24px;
+}
+
+.writing-code {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 3px solid rgb(238, 148, 57);
+    padding: 14px 16px;
+    margin: 0 0 1.6em;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+    color: rgb(243, 234, 234);
+}
+
+.writing-figure {
+    margin: 24px 0;
+    text-align: center;
+}
+
+.writing-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: block;
+    margin: 0 auto;
+}
+
+.writing-figure figcaption {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    margin-top: 8px;
 }
 
 /* ---------- External / Persona links ---------- */
