@@ -33,31 +33,38 @@
             <div class="writing-body">
 
                 <p>
-                    I built my own local AI assistant, a full agent, with a
-                    Discord frontend, a systemd service, and a personality of "Moria Casán impersonating a supercomputer." 
-                    I ran it on a Win Mini 2025: an AMD Ryzen AI 9
-                    with a Radeon 890M integrated GPU and 64GB of unified memory, running Nobara Linux.
-                    I got it to 17 tokens per second with a 9B model, 4 t/s with a 27 B model - happy with experiment but I ended up using the Deepseek API
+                    I built my own local AI assistant using Hermes, a full agent, with a Discord frontend, a systemd
+                    service, and a personality of "Moria Casán impersonating a supercomputer" - I called it DIVA.  
+                </p>   
+                <p>    
+                    Hardware:  Win Mini 2025, AMD Ryzen AI 9, Radeon 890M integrated GPU, 64GB unified memory,
+                    Nobara Linux. Best results: 17 t/s with a 9B model, 4 t/s with a 27B. Fun experiment.
+                    I still ended up using the DeepSeek API.
                 </p>
 
-                <h3>Why local at all</h3>
+                                <figure class="writing-figure">
+                    <img class="writing-image" src="win-mini-local.png" alt="Local inference on the Win Mini 2025">
+                    <figcaption>Local inference on the Win Mini 2025.</figcaption>
+                </figure>
+
+                <h3>Why not just use an API?</h3>
                 <p>
-                    I work in MLOps and I was curious on how inference works, and stop treating inference as a black box that somebody else runs. 
-                    I wanted to know what a infering the token actually costs on hardware I can touch. 
-                    The only way to learn that is to serve a model yourself and fix things until it works.
+                    I work in MLOps and I was tired of treating inference as a black box somebody else runs.
+                    I wanted to know what a token actually costs on hardware I can touch. The only way to
+                    learn that: serve a model yourself and fix it until it works.
                 </p>
 
-                <h3>The hardware reality</h3>
+                <h3>The machine</h3>
                 <p>
-                    The Win Mini is a beautiful little machine - I called it jokingly My Husband - a whole computer in your palm with 64GB of
-                    unified memory. But the GPU is integrated: its "VRAM" is just a slice of system
-                    RAM, and every access competes with the CPU. No amount of stubborness makes a
-                    handheld PC compete with paying an API but I had fun and I learned.
+                    The Win Mini is a whole computer in your palm: I call it jokingly My Husband. With 64GB of unified
+                    memory, the GPU is integrated: its "VRAM" is a slice of system RAM, and every access
+                    competes with the CPU. No amount of stubbornness makes a handheld PC compete with an API.
+                    I had fun and I learned.
                 </p>
 
-                <h3>The setup</h3>
+                <h3>The setup: blood, sweat and ROCm</h3>
                 <p>
-                    Install ROCm on Nobara, add your user to the render and video groups, and check your GPU
+                    Install ROCm on Nobara, add your user to the render and video groups, check your GPU
                     target:
                 </p>
 <pre class="writing-code">sudo dnf install rocm-hip rocm-opencl rocminfo
@@ -69,66 +76,61 @@ rocminfo | grep gfx        # -> gfx1150 on the Ryzen AI 9</pre>
 <pre class="writing-code">cmake -B build -DGGML_HIP=ON -DAMDGPU_TARGETS=gfx1150 -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release -j$(nproc)</pre>
                 <p>
-                    Download a GGUF with the Hugging Face CLI and serve it with all layers offloaded:
+                    Download a GGUF and serve it with all layers offloaded:
                 </p>
 <pre class="writing-code">hf download &lt;org&gt;/&lt;model&gt;-GGUF &lt;file&gt;.gguf --local-dir ./models
 ./build/bin/llama-server -m ./models/&lt;file&gt;.gguf -ngl 999 -c 8192 \
   --host 0.0.0.0 --port 8080</pre>
 
-                <h3>The wins</h3>
-                <p>
-                    Two things made the difference:
-                </p>
-                <p>
-                    First, an MTP draft head (multi-token
-                    prediction), the model drafts several tokens and verifies them in parallel, so the GPU
-                    stays busy instead of stalling on one token at a time. That took me from a frustrating
-                    session at 4 t/s to a measured 9.0 t/s on a Qwythos-9B Q6_K. Nine tokens per second is not fast, 
-                    but it is <em>readable</em>, and for an
-                    async Discord bot that lives in a systemd service, readable is enough.
-                </p>
-                <p>
-                    Second, the <strong>BIOS UMA trick</strong>. On integrated GPUs, the amount of RAM the
-                    GPU gets to use is configured in BIOS — AMD CBS &rarr; UMA Frame Buffer Size. Setting it to
-                    32GB gives the GPU a dedicated chunk instead of fighting the CPU for every access.
-                    I measured 17.0 t/s on a Qwythos-9B Q6_K, i was very happy with that
+                <h3>What actually worked</h3>
 
+                <p>
+                    First, an MTP draft head (multi-token prediction): the model drafts several tokens and
+                    verifies them in parallel, so the GPU stays busy instead of stalling. That took me from
+                    4 t/s to 9.0 t/s on a Qwythos-9B Q6_K.
+                </p>
+                <p>
+                    Second, the BIOS UMA trick. On integrated GPUs, the RAM of the GPU is set in
+                    BIOS — AMD CBS &rarr; UMA Frame Buffer Size. 32GB gives it a dedicated chunk instead of
+                    fighting the CPU for every access. I measured 17.0 t/s on the same
+                    Qwythos-9B. I was very happy with that.
                 </p>
 
-                <h3>The honest truth</h3>
+                <h3>The part I did not want to admit</h3>
                 <p>
-                    Here is the part I did not want to admit for a while: 17 t/s is fine for a bot that answers
-                    when it feels like it but terrible for my workflow. I work in long sessions. a
-                    context that grows to tens of thousands of tokens, iterative edits, questions that need
-                    the model to have read the whole repo. At 17 t/s with 70k of context, every turn costs
-                    minutes, the fans spin up and I start optimising my questions instead of my code. 
+                    17 t/s is fine for a bot that answers when it feels like it, terrible for my workflow.
+                    I work in long sessions: context that grows to tens of thousands of tokens, iterative
+                    edits, questions that need the model to have read the whole repo. At 17 t/s with 70k of
+                    context, every turn costs minutes, the fans spin up and my husband gets to a pretty 90 Celsius, 
+                    and I start optimising my questions instead of my code.
                 </p>
                 <p>
-                    And there is the maintenance tax. A local stack is a service you are on call for: BIOS
-                    settings, ROCm updates that break your build, quantization choices, the 2am
-                    <code>out of memory</code> because the context window grew and the UMA died.
-                    My day job is literally keeping ML systems reliable in production, IT PAINS ME to build my own unreliable
+                    Also the maintenance tax: BIOS settings,
+                    ROCm updates that break your build, quantization choices, the 2am
+                    <code>out of memory</code> because the context window grew and the UMA died. My day job
+                    is keeping ML systems reliable in production. IT PAINS ME to run my own unreliable
                     production system.
                 </p>
 
-                <h3>Why I moved to DeepSeek V4 Flash</h3>
+                <h3>Why the API won</h3>
                 <p>
-                    DeepSeek V4 Flash via API gives me answers in seconds instead of minutes, quality at or above what the local 9B could do,
-                    zero hardware babysitting, and a cost per token that is frankly trivial compared with my
-                    time. The tradeoff is that my prompts leave my house for the workloads that need it, still work with a mix of local/API setup. 
-                </p>
-                <h3>From inference setup to Lab setup</h3>
-                <p>
-                    The Win Mini did not get retired, it went from "production
-                    assistant" to "lab": finetuning experiments with unsloth, axolotl on ROCm and model
-                    evaluation, that's where a my little machine is fine and privacy is a feature - hopefully next blog.
+                    DeepSeek V4 Flash via API: answers in seconds instead of minutes, quality at or above the
+                    local 9B, zero hardware babysitting, and a cost per token that is trivial compared to my
+                    time. The tradeoff: my prompts leave my house. I still run a mix of local and API.
                 </p>
 
+                <h3>Second chance: from server to lab</h3>
                 <p>
-                    I am glad I built it. I know what a token costs now, in a way that reading a blog post
-                    would never have taught me. And knowing that is exactly why I stopped serving locally:
-                    the practical choice was the API, and the practical choice is the reliable one.
+                    The Win Mini did not retire. It went from "production assistant" to lab: finetuning
+                    experiments with unsloth, axolotl on ROCm, model evaluation. That is where a slow machine
+                    is fine and privacy is a feature, hopefully next blog.
                 </p>
+                <p>
+                    I am glad I built it. Now I know what a token costs: the practical choice was the API, and the
+                    practical choice is the reliable one.
+                </p>
+
+
             </div>
         </div>
 

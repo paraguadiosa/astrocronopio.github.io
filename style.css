@@ -199,6 +199,15 @@ a:hover {
     text-indent: 0;
 }
 
+.writing-body h3 {
+    color: rgb(238, 148, 57);
+    font-size: 1.15em;
+    margin: 28px 0 10px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(238, 148, 57, 0.3);
+    padding-bottom: 6px;
+}
+
 .writing-ascii {
     text-align: center;
     padding: 40px 0 10px;
@@ -234,6 +243,26 @@ a:hover {
     overflow-x: auto;
     white-space: pre;
     color: rgb(243, 234, 234);
+}
+
+.writing-figure {
+    margin: 24px 0;
+    text-align: center;
+}
+
+.writing-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: block;
+    margin: 0 auto;
+}
+
+.writing-figure figcaption {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.4);
+    font-style: italic;
+    margin-top: 8px;
 }
 
 /* ---------- External / Persona links ---------- */
