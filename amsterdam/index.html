@@ -1,0 +1,2988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amsterdam Console</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='12'%20fill='%23101828'/%3E%3Cg%20stroke='%23c8102e'%20stroke-width='6'%20stroke-linecap='square'%3E%3Cline%20x1='22'%20y1='9'%20x2='42'%20y2='23'/%3E%3Cline%20x1='42'%20y1='9'%20x2='22'%20y2='23'/%3E%3Cline%20x1='22'%20y1='25'%20x2='42'%20y2='39'/%3E%3Cline%20x1='42'%20y1='25'%20x2='22'%20y2='39'/%3E%3Cline%20x1='22'%20y1='41'%20x2='42'%20y2='55'/%3E%3Cline%20x1='42'%20y1='41'%20x2='22'%20y2='55'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+  /* ── design tokens ──────────────────────────────────────────── */
+  :root {
+    /* surfaces — dark slate + bio-luminescent neon */
+    --bg:          #0b0e14;
+    --bg-soft:     #10151f;
+    --card:        #0f172a;
+    --card-hover:  #16233a;
+
+    /* borders */
+    --border:      #1e2a3a;
+    --border-hi:   rgba(0,255,136,.4);
+
+    /* text */
+    --text:        #e6eef4;
+    --muted:       #8fa3b8;
+    --faint:       #5c7186;
+
+    /* accent: bio-luminescent cyan/teal */
+    --accent:      #00e5ff;
+    --accent-2:    #7df6ff;
+
+    /* Amsterdam flag red */
+    --ams-red:     #c8102e;
+
+    /* semantic — emerald green, warning amber */
+    --green:       #00ff88;
+    --amber:       #ffb000;
+    --red:         #ff4d6d;
+
+    /* warning strip */
+    --warn-bg:     rgba(255,176,0,.07);
+    --warn-border: rgba(255,176,0,.32);
+    --warn-text:   #ffcf7a;
+
+    /* button gradient */
+    --btn-from:    #00e5a8;
+    --btn-to:      #00a07a;
+
+    /* glassmorphism + HUD glow */
+    --glass-bg:         rgba(15,23,42,.75);
+    --glass-border:     rgba(0,255,136,.2);
+    --glass-blur:       12px;
+    --panel-glow:       0 0 15px rgba(0,255,136,.15);
+    --panel-glow-hover: 0 0 26px rgba(0,255,136,.28);
+    --spark:            #00e5ff;
+    --spark-fade:       linear-gradient(180deg, rgba(0,229,255,.28), rgba(0,229,255,0));
+    --scanline:         repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, rgba(0,0,0,.02) 1px 3px);
+    --row-glow:         rgba(0,255,136,.12);
+
+    /* shape */
+    --radius-sm:   6px;
+    --radius-md:   10px;
+    --radius-lg:   16px;
+    --radius-pill: 999px;
+
+    /* elevation */
+    --shadow-sm:    0 1px 3px rgba(0,0,0,.6);
+    --shadow-hover: 0 8px 24px rgba(0,0,0,.6);
+
+    /* motion */
+    --t-fast: 120ms ease;
+    --t-base: 180ms ease;
+
+    /* type */
+    --font:      "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-mono: "Fira Code", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+
+    /* layout */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --bp-md: 768px;
+    --bp-lg: 1024px;
+  }
+
+  /* All palettes (night, day, dusk, aurora, retro) live in
+     src/themes.js and are injected as :root overrides at runtime.
+     :root above stays as the no-JS night fallback. */
+
+  /* ── reset ──────────────────────────────────────────────────── */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ── base ────────────────────────────────────────────────────── */
+  body {
+    font-family: var(--font);
+    background-color: var(--bg);
+    background-image: radial-gradient(ellipse 1000px 480px at 25% -8%, var(--body-glow) 0%, transparent 60%);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    font-size: 0.9375rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── focus ring ──────────────────────────────────────────────── */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* ── screen-reader only ──────────────────────────────────────── */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ── Amsterdam flag stripe ───────────────────────────────────── */
+  .ams-stripe {
+    height: 4px;
+    background: linear-gradient(to bottom,
+      var(--ams-red) 0 33.4%,
+      #0b0b12 33.4% 66.7%,
+      var(--ams-red) 66.7% 100%);
+  }
+
+  /* ── layout ──────────────────────────────────────────────────── */
+  .skip-link {
+    position: absolute;
+    left: 12px;
+    top: 8px;
+    z-index: 20;
+    padding: 8px 12px;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transform: translateY(-160%);
+  }
+
+  .skip-link:focus {
+    transform: none;
+  }
+
+  .wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0 28px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px 20px 72px;
+  }
+
+  .workspace,
+  .dock {
+    min-width: 0;
+  }
+
+  /* ── hero banner ─────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    height: clamp(168px, 22vw, 228px);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-hover);
+    margin-bottom: 20px;
+    isolation: isolate;
+  }
+
+  .hero-scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .hero::after {
+    /* soft vignette so the copy stays readable over the scene */
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--hero-fade);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .hero-copy {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    padding: clamp(16px, 3vw, 28px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 2px;
+    pointer-events: none;
+  }
+
+  .kicker {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2.4px;
+    color: var(--kicker-color);
+    margin-bottom: 6px;
+    text-shadow: var(--kicker-shadow);
+  }
+
+  .hero h1 {
+    font-size: clamp(1.55rem, 3.4vw, 2.15rem);
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    line-height: 1.1;
+    color: var(--hero-title);
+    text-shadow: var(--hero-title-shadow);
+  }
+
+  .hero .sub {
+    margin-top: 4px;
+    color: var(--hero-sub);
+    font-size: 0.875rem;
+    max-width: 42em;
+    text-shadow: var(--hero-sub-shadow);
+  }
+
+  .hero .meta {
+    margin-top: 2px;
+    color: var(--hero-meta);
+    font-size: 0.8125rem;
+    text-shadow: var(--hero-meta-shadow);
+  }
+
+  .verse {
+    margin-top: 8px;
+    max-width: 42em;
+    font-size: 0.75rem;
+    font-style: italic;
+    line-height: 1.45;
+    color: var(--verse);
+    border-left: 2px solid var(--accent);
+    padding-left: 10px;
+    text-shadow: var(--verse-shadow);
+  }
+
+  .flag-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 2;
+    border-radius: 7px;
+    border: 1px solid var(--flag-border);
+    box-shadow: var(--flag-shadow);
+    background: #0b0b12;
+    line-height: 0;
+  }
+
+  .hero-nav {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 3;
+  }
+
+  .hero-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-family: var(--font);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--toggle-color);
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--toggle-shadow);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    text-decoration: none;
+  }
+
+  .hero-nav a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* ── credits panel ───────────────────────────────────────────── */
+  .credits {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 16px;
+    background:
+      var(--credits-fade),
+      var(--card);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .credits::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--credits-bar);
+  }
+
+  .credits-body {
+    flex: 1;
+    padding: 16px 20px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .credits-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    /* glow color comes from the active palette */
+    box-shadow: var(--live-dot-glow);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .35; }
+  }
+
+  .credits-value {
+    font-family: var(--font-mono);
+    font-size: clamp(1.85rem, 4.6vw, 2.7rem);
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    line-height: 1.15;
+    color: var(--green);
+    text-shadow: 0 0 22px var(--credits-glow);
+  }
+
+  .credits-split {
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  .credits-note {
+    align-self: center;
+    padding: 0 24px 0 8px;
+    font-size: 0.75rem;
+    color: var(--faint);
+    text-align: right;
+    max-width: 240px;
+    border-left: 1px solid var(--border);
+  }
+
+  .credits-note code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    color: var(--accent-2);
+    background: var(--bg-soft);
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Collapsed spend summary: same panel, amber value to mark spend. */
+  .spend-blob { cursor: pointer; }
+  .spend-blob .credits-value {
+    color: var(--amber);
+    text-shadow: 0 0 22px var(--warn-bg);
+  }
+
+  /* ── warning banner ──────────────────────────────────────────── */
+  .warning {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: var(--radius-md);
+    color: var(--warn-text);
+    font-size: 0.875rem;
+  }
+
+  .warning::before {
+    content: "!";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  /* ── billing toolbar ─────────────────────────────────────────── */
+  #billing-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  #billing-status {
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  #billing-status.live  { color: var(--green); }
+  #billing-status.error { color: var(--red); }
+
+  /* ── billing summary ─────────────────────────────────────────── */
+  #billing-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  /* ── chips ───────────────────────────────────────────────────── */
+  .chip {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    font-size: 0.8125rem;
+    transition: transform var(--t-fast), border-color var(--t-fast);
+  }
+
+  .chip:hover { transform: translateY(-1px); border-color: var(--border-hi); }
+
+  .chip .chip-edit {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 1px 7px;
+    font-family: var(--font);
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--faint);
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .chip .chip-edit:hover {
+    color: var(--text);
+    border-color: var(--border-hi);
+  }
+
+  .chip-editor {
+    display: flex;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .chip-editor[hidden] { display: none; }
+
+  .chip-editor input {
+    width: 96px;
+    padding: 4px 8px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--text);
+    background: var(--bg-soft);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-sm);
+    outline: none;
+  }
+
+  .chip-editor input:focus { border-color: var(--accent); }
+
+  .chip-editor button {
+    padding: 4px 10px;
+    font-family: var(--font);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, var(--btn-from), var(--btn-to));
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .chip .chip-name {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  .chip .chip-value {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  .chip.balance  { border-left-color: var(--green); }
+  .chip.usage    { border-left-color: var(--amber); }
+  .chip.verified { border-left-color: var(--accent); }
+  .chip.error    { border-left-color: var(--red); }
+  .chip.off      { border-left-color: var(--border-hi); }
+
+  .chip.balance  .chip-value { color: var(--green); }
+  .chip.usage    .chip-value { color: var(--amber); }
+  .chip.verified .chip-value { color: var(--accent-2); }
+  .chip.error    .chip-value { color: var(--red); }
+  .chip.off      .chip-value { color: var(--faint); font-style: italic; font-weight: 400; }
+
+  #billing-prompt {
+    grid-column: 1 / -1;
+    padding: 20px 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+    font-style: italic;
+    text-align: center;
+  }
+
+  #billing-prompt code {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.875em;
+    color: var(--accent-2);
+    background: var(--bg-soft);
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+  }
+
+  #billing-time {
+    grid-column: 1 / -1;
+    text-align: right;
+    color: var(--faint);
+    font-size: 0.6875rem;
+    letter-spacing: 0.2px;
+  }
+
+  /* ── spend by model ─────────────────────────────────────────── */
+  #spend-section,
+  #pi-spend-content {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 12px 12px 4px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .table-tools {
+    padding: 0 4px;
+  }
+
+  #spend-table,
+  #pi-spend-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+    margin-bottom: 20px;
+  }
+
+  #spend-table th,
+  #pi-spend-table th {
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-hi);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  #pi-spend-table th { cursor: default; }
+
+  #spend-table th.active { color: var(--text); }
+
+  #spend-table th .sort-indicator {
+    display: inline-block;
+    margin-left: 4px;
+    color: var(--accent-2);
+    font-size: 0.6875rem;
+    line-height: 1;
+  }
+
+  #spend-table td,
+  #pi-spend-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+    word-break: break-word;
+  }
+
+  #spend-table tbody tr:hover,
+  #pi-spend-table tbody tr:hover { background: var(--bg-soft); }
+
+  #spend-table .num,
+  #pi-spend-table .num {
+    text-align: right;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+
+  #spend-table .model,
+  #pi-spend-table .model { font-family: var(--font-mono); }
+  #spend-table .cost,
+  #pi-spend-table .cost { color: var(--green); font-family: var(--font-mono); white-space: nowrap; }
+  #spend-table .cost.na { color: var(--faint); }
+
+  #pi-summary {
+    font-size: 0.875rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0 0 14px;
+  }
+
+  /* ── column picker ─────────────────────────────────────────── */
+  .table-tools { margin: 0 0 12px; display: flex; gap: 8px; align-items: flex-start; padding: 0 4px; }
+
+  .model-filter {
+    padding: 8px 12px;
+    font-family: var(--font);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--accent-2);
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    max-width: 260px;
+  }
+
+  .model-filter:hover:not(:disabled) {
+    border-color: var(--border-hi);
+    color: var(--text);
+  }
+
+  .model-filter:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .model-filter:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  .columns-wrap { position: relative; display: inline-block; }
+
+  .columns-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 10;
+    min-width: 220px;
+    padding: 14px;
+    background: var(--card);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .columns-panel[hidden] { display: none; }
+
+  .columns-panel fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+
+  .columns-panel legend {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .columns-panel label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  .columns-panel label:hover { background: var(--bg-soft); }
+
+  .columns-panel input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 15px;
+    height: 15px;
+  }
+
+  /* ── section headings ────────────────────────────────────────── */
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 22px 0 12px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    color: var(--muted);
+  }
+
+  h2 .dot {
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  h2 .count {
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--faint);
+  }
+
+  h2 .chevron {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--faint);
+    transition: transform var(--t-fast);
+  }
+
+  h2.toggle {
+    cursor: pointer;
+    user-select: none;
+    border-radius: var(--radius-sm);
+    padding: 2px 4px;
+    margin-left: -4px;
+  }
+
+  h2.toggle:hover { color: var(--text); }
+  h2.toggle:hover .dot { background: var(--accent-2); }
+
+  h2.toggle.expanded .dot { background: var(--accent-2); }
+  h2.toggle.expanded .chevron { transform: rotate(90deg); }
+
+  /* ── search ──────────────────────────────────────────────────── */
+  #search {
+    display: block;
+    width: 100%;
+    padding: 11px 14px;
+    font-family: var(--font);
+    font-size: 0.9375rem;
+    color: var(--text);
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    outline: none;
+    margin: 22px 0 14px;
+    transition: border-color var(--t-fast), box-shadow var(--t-fast);
+  }
+
+  #search:focus {
+    border-color: var(--accent);
+    box-shadow: var(--search-ring);
+  }
+
+  #search::placeholder { color: var(--faint); }
+
+  /* ── cards grid ──────────────────────────────────────────────── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+
+  #extra-cards.collapsed { display: none; }
+  #spend-section.collapsed,
+  #pi-spend-content.collapsed { display: none; }
+  .card.hidden     { display: none; }
+
+  /* ── provider card ───────────────────────────────────────────── */
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition:
+      transform var(--t-fast),
+      border-color var(--t-fast),
+      background var(--t-fast),
+      box-shadow var(--t-fast);
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-hi);
+    background: var(--card-hover);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+    color: var(--text);
+  }
+
+  .card .tag {
+    align-self: flex-start;
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--tag-color);
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+  }
+
+  .card .tag.local {
+    color: var(--tag-local-color);
+    background: var(--tag-local-bg);
+    border-color: var(--tag-local-border);
+  }
+
+  .card .note {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .card .envs {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--muted);
+    word-break: break-word;
+    line-height: 1.4;
+  }
+
+  /* ── list rows: detected + extra ─────────────────────────────── */
+  .cards[data-group="detected"],
+  .cards[data-group="extra"] {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 28px;
+  }
+
+  .cards[data-group="detected"] .card,
+  .cards[data-group="extra"] .card {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 4px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .cards[data-group="detected"] .card:hover,
+  .cards[data-group="extra"] .card:hover {
+    transform: none;
+    background: none;
+    border-color: var(--border);
+    box-shadow: none;
+  }
+
+  .cards[data-group="detected"] .card h3,
+  .cards[data-group="extra"] .card h3 {
+    font-size: 0.9375rem;
+    min-width: 130px;
+  }
+
+  .cards[data-group="detected"] .card .note,
+  .cards[data-group="extra"] .card .note { display: none; }
+
+  .cards[data-group="detected"] .card .tag,
+  .cards[data-group="extra"] .card .tag {
+    font-size: 0.625rem;
+    padding: 2px 7px;
+    background: var(--tag-row-bg);
+    border-color: var(--tag-row-border);
+  }
+
+  .cards[data-group="detected"] .card .tag.local,
+  .cards[data-group="extra"] .card .tag.local {
+    background: var(--tag-row-local-bg);
+    border-color: var(--tag-row-local-border);
+  }
+
+  .cards[data-group="detected"] .card .envs,
+  .cards[data-group="extra"] .card .envs {
+    font-size: 0.8125rem;
+    color: var(--faint);
+  }
+
+  .cards[data-group="detected"] .card .btn,
+  .cards[data-group="extra"] .card .btn {
+    margin-left: auto;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: var(--accent-2);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .cards[data-group="detected"] .card .btn:hover,
+  .cards[data-group="extra"] .card .btn:hover {
+    filter: none;
+    box-shadow: none;
+    text-decoration: underline;
+  }
+
+  /* ── buttons ─────────────────────────────────────────────────── */
+  .btn {
+    display: inline-block;
+    padding: 9px 16px;
+    font-family: var(--font);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(135deg, var(--btn-from) 0%, var(--btn-to) 100%);
+    border-radius: var(--radius-md);
+    border: none;
+    box-shadow: var(--btn-shadow);
+    cursor: pointer;
+    transition: filter var(--t-fast), box-shadow var(--t-fast);
+  }
+
+  .btn:hover {
+    filter: brightness(1.1);
+    box-shadow: var(--btn-shadow-hover);
+  }
+
+  .btn.ghost {
+    background: var(--bg-soft);
+    color: var(--accent-2);
+    border: 1px solid var(--border);
+    box-shadow: none;
+  }
+
+  .btn.ghost:hover {
+    filter: none;
+    border-color: var(--border-hi);
+    color: var(--text);
+    box-shadow: none;
+  }
+
+  /* ── empty states ────────────────────────────────────────────── */
+  .empty {
+    display: none;
+    padding: 48px 0;
+    color: var(--muted);
+    text-align: center;
+    font-size: 0.9375rem;
+  }
+
+  .empty.show { display: block; }
+
+  .hint {
+    display: none;
+    padding: 10px 0 4px;
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .hint.show { display: block; }
+
+  .hint code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    color: var(--accent-2);
+    background: var(--bg-soft);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* ── footer ──────────────────────────────────────────────────── */
+  footer {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--faint);
+    font-size: 0.75rem;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+  /* ── responsive ──────────────────────────────────────────────── */
+  @media (min-width: 1024px) {
+    .wrap {
+      grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+      align-items: start;
+    }
+
+    .hero,
+    footer {
+      grid-column: 1 / -1;
+    }
+
+    .workspace { grid-column: 1; }
+    .dock {
+      grid-column: 2;
+      position: sticky;
+      top: 16px;
+    }
+
+    .dock #search { margin-top: 0; }
+  }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 16px 14px 56px; }
+    .hero { height: 168px; }
+    .verse { display: none; }
+    .flag-badge { top: 10px; right: 10px; transform: scale(.85); }
+    .cards { grid-template-columns: 1fr; }
+    #billing-summary { grid-template-columns: repeat(2, 1fr); }
+    .credits-note { display: none; }
+    .credits { flex-direction: column; }
+    .kicker { margin-bottom: 6px; }
+  }
+
+  /* ── hero artwork: day/night crossfade ─────────────────────── */
+  .hero-scene { transition: opacity 0.5s ease; }
+
+  .hero-art--day { opacity: 0; }
+  [data-scene="night"] .hero-art--night { opacity: 1; }
+  [data-scene="night"] .hero-art--day { opacity: 0; }
+  [data-scene="day"] .hero-art--night { opacity: 0; }
+  [data-scene="day"] .hero-art--day { opacity: 1; }
+
+  /* ── theme picker ──────────────────────────────────────────── */
+  .theme-wrap {
+    position: absolute;
+    top: 16px;
+    right: 88px;
+    z-index: 3;
+  }
+
+  .theme-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px 6px 12px;
+    font-family: var(--font);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: var(--toggle-color);
+    background: var(--toggle-bg);
+    border: 1px solid var(--toggle-border);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--toggle-shadow);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+  }
+
+  .theme-picker-label { text-transform: uppercase; }
+
+  .theme-select {
+    font-family: var(--font);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--bg-soft);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-sm);
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+
+  .theme-select:hover { border-color: var(--accent); }
+
+  .theme-select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .theme-wrap { top: 10px; right: 72px; transform: scale(.85); }
+    .hero-nav { top: 10px; left: 10px; transform: scale(.85); }
+  }
+
+  /* ── bio-luminescent HUD: glass, glow, scanlines, cursor ──── */
+  [hidden] { display: none !important; }
+
+  .hero {
+    border-color: var(--glass-border);
+    box-shadow: var(--panel-glow);
+  }
+
+  .credits,
+  .card,
+  #spend-section,
+  #pi-spend-content,
+  .columns-panel {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur));
+    border-color: var(--glass-border);
+  }
+
+  .credits,
+  .card,
+  #spend-section,
+  #pi-spend-content {
+    box-shadow: var(--panel-glow);
+  }
+
+  .card:hover {
+    box-shadow: var(--panel-glow-hover);
+  }
+
+  /* micro sparklines layered behind the HUD totals */
+  .sparkline {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: .45;
+    z-index: 0;
+  }
+
+  .credits-body,
+  .credits-note {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* CRT scanlines over tables and provider lists */
+  #spend-section,
+  #pi-spend-content {
+    background-color: var(--glass-bg);
+    background-image: var(--scanline);
+  }
+
+  .cards[data-group="detected"],
+  .cards[data-group="extra"] {
+    background-image: var(--scanline);
+  }
+
+  /* monospace HUD tables with glowing hover rows */
+  #spend-table,
+  #pi-spend-table {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+
+  #spend-table tbody tr,
+  #pi-spend-table tbody tr {
+    transition: background var(--t-fast), box-shadow var(--t-fast);
+  }
+
+  #spend-table tbody tr:hover,
+  #pi-spend-table tbody tr:hover {
+    background: var(--row-glow);
+    box-shadow: inset 0 0 12px var(--row-glow);
+    text-shadow: 0 0 6px var(--row-glow);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live-dot { animation: none; }
+  }
+  /* ── demo badge + onboarding tour ─────────────────────────── */
+  .demo-badge {
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-pill);
+    padding: 2px 10px;
+  }
+
+  .tour-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 6, 12, .62);
+    z-index: 90;
+  }
+
+  #tour-root[hidden] { display: none; }
+
+  .tour-highlight {
+    position: relative;
+    z-index: 95;
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 28px var(--panel-glow);
+  }
+
+  .tour-box {
+    position: fixed;
+    z-index: 100;
+    max-width: 340px;
+    padding: 18px 20px;
+    background: var(--card);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, .5);
+  }
+
+  .tour-box h2 { margin: 0 0 6px; font-size: 1.05rem; }
+  .tour-box p { margin: 0 0 14px; color: var(--muted); font-size: .9rem; line-height: 1.45; }
+  .tour-nav { display: flex; align-items: center; gap: 8px; }
+  #tour-progress { margin-right: auto; font-size: .78rem; color: var(--faint); }
+  .tour-box .btn[disabled] { opacity: .45; cursor: default; }
+</style>
+<script src="src/themes.js"></script>
+<script src="src/providers/catalog.js"></script>
+<script>
+  /* Apply the stored or clock-derived theme before first paint.
+     Dusk is the fallback when storage is closed. */
+  (function () {
+    var T = window.AMS_THEMES;
+    var style = document.createElement('style');
+    style.id = 'ams-theme-vars';
+    document.head.appendChild(style);
+
+    function apply(id) {
+      document.documentElement.setAttribute('data-theme', id);
+      document.documentElement.setAttribute('data-scene', T.THEMES[id].scene);
+      style.textContent = T.buildThemeCss(id);
+    }
+
+    var pref = 'auto';
+    try {
+      var saved = localStorage.getItem('amsterdam.theme');
+      if (saved === 'auto' || T.THEMES[saved]) pref = saved;
+    } catch (e) {}
+    apply(T.effectiveTheme(pref, new Date()));
+    window.__amsTheme = { apply: apply };
+  })();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="ams-stripe" aria-hidden="true"></div>
+<div class="wrap">
+
+  <!-- ── hero banner: Amsterdam ecopunk city ────────────────── -->
+  <header class="hero">
+    <nav class="hero-nav" aria-label="Console"><a href="usage.html">Amsterdam Monitoring</a></nav>
+    <svg class="hero-scene hero-art--night" viewBox="0 0 1200 440" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b0e14"/>
+      <stop offset="0.72" stop-color="#0e1622"/>
+      <stop offset="1" stop-color="#12202a"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a1218"/>
+      <stop offset="1" stop-color="#05080d"/>
+    </linearGradient>
+    <radialGradient id="moonGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#eafff4" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#b8f0d8" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#b8f0d8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="winLit" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8dffd0" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#00c878" stop-opacity="0.5"/>
+    </linearGradient>
+    <linearGradient id="refl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8dffd0" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#8dffd0" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="440" fill="url(#sky)"/>
+
+  <g fill="#d8f5e8">
+    <circle cx="70" cy="58" r="1.2" opacity="0.7"/>
+    <circle cx="150" cy="96" r="1" opacity="0.5"/>
+    <circle cx="240" cy="40" r="1.3" opacity="0.8"/>
+    <circle cx="330" cy="110" r="1" opacity="0.5"/>
+    <circle cx="430" cy="62" r="1.2" opacity="0.65"/>
+    <circle cx="520" cy="34" r="1" opacity="0.45"/>
+    <circle cx="610" cy="90" r="1.3" opacity="0.7"/>
+    <circle cx="700" cy="48" r="1" opacity="0.55"/>
+    <circle cx="790" cy="120" r="1.1" opacity="0.5"/>
+    <circle cx="880" cy="66" r="1.2" opacity="0.7"/>
+    <circle cx="940" cy="30" r="1" opacity="0.45"/>
+    <circle cx="1120" cy="120" r="1.1" opacity="0.6"/>
+    <circle cx="1130" cy="52" r="1.2" opacity="0.65"/>
+    <circle cx="60" cy="140" r="1" opacity="0.5"/>
+    <circle cx="380" cy="140" r="1.1" opacity="0.5"/>
+    <circle cx="660" cy="140" r="1" opacity="0.45"/>
+  </g>
+
+  <circle cx="1020" cy="86" r="46" fill="url(#moonGlow)"/>
+  <circle cx="1020" cy="86" r="20" fill="#eafff4"/>
+  <circle cx="1012" cy="80" r="4" fill="#c8f0dc" opacity="0.8"/>
+  <circle cx="1026" cy="92" r="3" fill="#c8f0dc" opacity="0.6"/>
+
+  <g>
+<g transform="translate(2 150)">
+  <rect width="38" height="158" fill="#101a24"/>
+  <rect width="2" height="158" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L38 0 L38 -47 L0 -47 Z" fill="#101a24"/><line x1="19" y1="-50" x2="19" y2="-62" stroke="#24424e" stroke-width="2.5"/><line x1="14" y1="-62" x2="24" y2="-62" stroke="#24424e" stroke-width="2.5"/>
+  <rect x="8" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="30" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="8" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="30" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="14" y="126" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(45 138)">
+  <rect width="43" height="170" fill="#101a24"/>
+  <rect width="2" height="170" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L43 0 L43 -17 L32.68 -17 L32.68 -34 L22.36 -34 L22.36 -51 L20.64 -51 L20.64 -34 L10.32 -34 L10.32 -17 L0 -17 Z" fill="#101a24"/>
+  <rect x="9" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="34" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="9" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="34" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="16.5" y="138" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(94 117)">
+  <rect width="37" height="191" fill="#101a24"/>
+  <rect width="2" height="191" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L37 0 L37 -19 L28.12 -19 L28.12 -38 L19.240000000000002 -38 L19.240000000000002 -57 L17.759999999999998 -57 L17.759999999999998 -38 L8.879999999999999 -38 L8.879999999999999 -19 L0 -19 Z" fill="#101a24"/>
+  <rect x="7" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="29" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="7" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="29" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="7" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="29" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="13.5" y="159" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(134 144)">
+  <rect width="44" height="164" fill="#101a24"/>
+  <rect width="2" height="164" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L44 0 L44 -49 L0 -49 Z" fill="#101a24"/><line x1="22" y1="-52" x2="22" y2="-64" stroke="#24424e" stroke-width="2.5"/><line x1="17" y1="-64" x2="27" y2="-64" stroke="#24424e" stroke-width="2.5"/>
+  <rect x="9" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="34" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="34" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="17" y="132" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(183 144)">
+  <rect width="41" height="164" fill="#101a24"/>
+  <rect width="2" height="164" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L41 0 C41 -49 32.800000000000004 -66 20.5 -66 C8.200000000000001 -66 0 -49 0 0 Z" fill="#101a24"/>
+  <rect x="8" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="32" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="8" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="32" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="15.5" y="132" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(226 145)">
+  <rect width="43" height="163" fill="#101a24"/>
+  <rect width="2" height="163" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L43 0 L43 -16 L32.68 -16 L32.68 -32 L22.36 -32 L22.36 -49 L20.64 -49 L20.64 -32 L10.32 -32 L10.32 -16 L0 -16 Z" fill="#101a24"/>
+  <rect x="9" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="34" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="34" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="16.5" y="131" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(273 178)">
+  <rect width="45" height="130" fill="#101a24"/>
+  <rect width="2" height="130" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L45 0 L45 -39 L0 -39 Z" fill="#101a24"/><line x1="22.5" y1="-42" x2="22.5" y2="-54" stroke="#24424e" stroke-width="2.5"/><line x1="17.5" y1="-54" x2="27.5" y2="-54" stroke="#24424e" stroke-width="2.5"/>
+  <rect x="9" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="35" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="9" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="35" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="17.5" y="98" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(324 131)">
+  <rect width="43" height="177" fill="#101a24"/>
+  <rect width="2" height="177" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L43 0 C43 -53 34.4 -72 21.5 -72 C8.6 -72 0 -53 0 0 Z" fill="#101a24"/>
+  <rect x="9" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="34" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="9" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="34" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="9" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="34" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="16.5" y="145" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(369 143)">
+  <rect width="45" height="165" fill="#101a24"/>
+  <rect width="2" height="165" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L45 0 L45 -17 L34.2 -17 L34.2 -33 L23.400000000000002 -33 L23.400000000000002 -50 L21.599999999999998 -50 L21.599999999999998 -33 L10.799999999999999 -33 L10.799999999999999 -17 L0 -17 Z" fill="#101a24"/>
+  <rect x="9" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="35" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="35" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="17.5" y="133" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(419 131)">
+  <rect width="48" height="177" fill="#101a24"/>
+  <rect width="2" height="177" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L48 0 C48 -53 38.400000000000006 -72 24 -72 C9.600000000000001 -72 0 -53 0 0 Z" fill="#101a24"/>
+  <rect x="10" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="37" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="10" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="10" y="80" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="37" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="19" y="145" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(471 150)">
+  <rect width="32" height="158" fill="#101a24"/>
+  <rect width="2" height="158" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L32 0 L32 -16 L24.32 -16 L24.32 -31 L16.64 -31 L16.64 -47 L15.36 -47 L15.36 -31 L7.68 -31 L7.68 -16 L0 -16 Z" fill="#101a24"/>
+  <rect x="6" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="25" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="6" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="25" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="11" y="126" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(506 127)">
+  <rect width="35" height="181" fill="#101a24"/>
+  <rect width="2" height="181" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L35 0 C35 -54 28 -73 17.5 -73 C7 -73 0 -54 0 0 Z" fill="#101a24"/>
+  <rect x="7" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="27" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="7" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="27" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="7" y="80" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="27" y="80" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="12.5" y="149" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(546 121)">
+  <rect width="32" height="187" fill="#101a24"/>
+  <rect width="2" height="187" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L32 0 C32 -56 25.6 -76 16 -76 C6.4 -76 0 -56 0 0 Z" fill="#101a24"/>
+  <rect x="6" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="25" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="6" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="25" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="6" y="80" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="25" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="11" y="155" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(583 117)">
+  <rect width="44" height="191" fill="#101a24"/>
+  <rect width="2" height="191" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L44 0 C44 -57 35.2 -77 22 -77 C8.8 -77 0 -57 0 0 Z" fill="#101a24"/>
+  <rect x="9" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="34" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="34" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="34" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="17" y="159" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(630 169)">
+  <rect width="37" height="139" fill="#101a24"/>
+  <rect width="2" height="139" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L37 0 L37 -14 L28.12 -14 L28.12 -28 L19.240000000000002 -28 L19.240000000000002 -42 L17.759999999999998 -42 L17.759999999999998 -28 L8.879999999999999 -28 L8.879999999999999 -14 L0 -14 Z" fill="#101a24"/>
+  <rect x="7" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="29" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="7" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="29" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="13.5" y="107" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(670 121)">
+  <rect width="44" height="187" fill="#101a24"/>
+  <rect width="2" height="187" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L44 0 L44 -18 L33.44 -18 L33.44 -37 L22.880000000000003 -37 L22.880000000000003 -56 L21.119999999999997 -56 L21.119999999999997 -37 L10.559999999999999 -37 L10.559999999999999 -18 L0 -18 Z" fill="#101a24"/>
+  <rect x="9" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="34" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="9" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="34" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="80" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="34" y="80" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="17" y="155" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(720 159)">
+  <rect width="36" height="149" fill="#101a24"/>
+  <rect width="2" height="149" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L36 0 L36 -45 L0 -45 Z" fill="#101a24"/><line x1="18" y1="-48" x2="18" y2="-60" stroke="#24424e" stroke-width="2.5"/><line x1="13" y1="-60" x2="23" y2="-60" stroke="#24424e" stroke-width="2.5"/>
+  <rect x="7" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="28" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="7" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="28" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="13" y="117" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(759 131)">
+  <rect width="47" height="177" fill="#101a24"/>
+  <rect width="2" height="177" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L47 0 L47 -53 L0 -53 Z" fill="#101a24"/><line x1="23.5" y1="-56" x2="23.5" y2="-68" stroke="#24424e" stroke-width="2.5"/><line x1="18.5" y1="-68" x2="28.5" y2="-68" stroke="#24424e" stroke-width="2.5"/>
+  <rect x="9" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="37" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="9" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="9" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="18.5" y="145" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(810 145)">
+  <rect width="51" height="163" fill="#101a24"/>
+  <rect width="2" height="163" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L51 0 C51 -49 40.800000000000004 -66 25.5 -66 C10.200000000000001 -66 0 -49 0 0 Z" fill="#101a24"/>
+  <rect x="10" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="40" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="10" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="40" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="20.5" y="131" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(866 135)">
+  <rect width="45" height="173" fill="#101a24"/>
+  <rect width="2" height="173" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L45 0 L45 -52 L0 -52 Z" fill="#101a24"/><line x1="22.5" y1="-55" x2="22.5" y2="-67" stroke="#24424e" stroke-width="2.5"/><line x1="17.5" y1="-67" x2="27.5" y2="-67" stroke="#24424e" stroke-width="2.5"/>
+  <rect x="9" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="35" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="35" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="35" y="80" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="17.5" y="141" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(913 150)">
+  <rect width="31" height="158" fill="#101a24"/>
+  <rect width="2" height="158" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L31 0 L31 -16 L23.56 -16 L23.56 -31 L16.12 -31 L16.12 -47 L14.879999999999999 -47 L14.879999999999999 -31 L7.4399999999999995 -31 L7.4399999999999995 -16 L0 -16 Z" fill="#101a24"/>
+  <rect x="6" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="24" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="6" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="24" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="10.5" y="126" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(948 174)">
+  <rect width="48" height="134" fill="#101a24"/>
+  <rect width="2" height="134" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L48 0 C48 -40 38.400000000000006 -54 24 -54 C9.600000000000001 -54 0 -40 0 0 Z" fill="#101a24"/>
+  <rect x="10" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="37" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="10" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="19" y="102" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(1002 150)">
+  <rect width="48" height="158" fill="#101a24"/>
+  <rect width="2" height="158" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L48 0 L48 -16 L36.480000000000004 -16 L36.480000000000004 -31 L24.96 -31 L24.96 -47 L23.04 -47 L23.04 -31 L11.52 -31 L11.52 -16 L0 -16 Z" fill="#101a24"/>
+  <rect x="10" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="10" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="19" y="126" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(1055 115)">
+  <rect width="47" height="193" fill="#101a24"/>
+  <rect width="2" height="193" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L47 0 L47 -19 L35.72 -19 L35.72 -38 L24.44 -38 L24.44 -58 L22.56 -58 L22.56 -38 L11.28 -38 L11.28 -19 L0 -19 Z" fill="#101a24"/>
+  <rect x="9" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="37" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="80" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="18.5" y="161" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(1107 122)">
+  <rect width="47" height="186" fill="#101a24"/>
+  <rect width="2" height="186" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L47 0 L47 -18 L35.72 -18 L35.72 -37 L24.44 -37 L24.44 -56 L22.56 -56 L22.56 -37 L11.28 -37 L11.28 -18 L0 -18 Z" fill="#101a24"/>
+  <rect x="9" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="20" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="9" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="37" y="50" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="9" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="37" y="80" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="18.5" y="154" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+<g transform="translate(1157 143)">
+  <rect width="37" height="165" fill="#101a24"/>
+  <rect width="2" height="165" fill="#1e3342" opacity="0.55"/>
+  <path d="M0 0 L37 0 L37 -17 L28.12 -17 L28.12 -33 L19.240000000000002 -33 L19.240000000000002 -50 L17.759999999999998 -50 L17.759999999999998 -33 L8.879999999999999 -33 L8.879999999999999 -17 L0 -17 Z" fill="#101a24"/>
+  <rect x="7" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="29" y="20" width="7" height="9" fill="#0e1620" stroke="#24424e" stroke-width="0.8"/><rect x="7" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="29" y="50" width="7" height="9" fill="url(#winLit)" opacity="0.95"/><rect x="13.5" y="133" width="10" height="24" fill="#0b1218" stroke="#1e3342" stroke-width="0.8"/>
+</g>
+  </g>
+
+  <rect y="308" width="1200" height="132" fill="url(#water)"/>
+  <g>
+    <line x1="0" y1="322" x2="1200" y2="322" stroke="#3f6f6a" stroke-width="1" opacity="0.16"/>
+    <line x1="60" y1="336" x2="1180" y2="336" stroke="#3f6f6a" stroke-width="1" opacity="0.12"/>
+    <line x1="0" y1="350" x2="1200" y2="350" stroke="#3f6f6a" stroke-width="1" opacity="0.18"/>
+    <line x1="90" y1="364" x2="1170" y2="364" stroke="#3f6f6a" stroke-width="1" opacity="0.12"/>
+    <line x1="0" y1="378" x2="1200" y2="378" stroke="#3f6f6a" stroke-width="1" opacity="0.14"/>
+    <line x1="140" y1="392" x2="1140" y2="392" stroke="#3f6f6a" stroke-width="1" opacity="0.1"/>
+  </g>
+  <g>
+<rect x="10" y="310" width="7" height="19" fill="url(#refl)" opacity="0.20"/>
+<rect x="10" y="310" width="7" height="25" fill="url(#refl)" opacity="0.35"/>
+<rect x="32" y="310" width="7" height="22" fill="url(#refl)" opacity="0.26"/>
+<rect x="54" y="310" width="7" height="19" fill="url(#refl)" opacity="0.36"/>
+<rect x="79" y="310" width="7" height="16" fill="url(#refl)" opacity="0.38"/>
+<rect x="101" y="310" width="7" height="16" fill="url(#refl)" opacity="0.26"/>
+<rect x="123" y="310" width="7" height="17" fill="url(#refl)" opacity="0.31"/>
+<rect x="101" y="310" width="7" height="25" fill="url(#refl)" opacity="0.31"/>
+<rect x="123" y="310" width="7" height="25" fill="url(#refl)" opacity="0.28"/>
+<rect x="143" y="310" width="7" height="20" fill="url(#refl)" opacity="0.35"/>
+<rect x="191" y="310" width="7" height="12" fill="url(#refl)" opacity="0.30"/>
+<rect x="215" y="310" width="7" height="12" fill="url(#refl)" opacity="0.28"/>
+<rect x="235" y="310" width="7" height="20" fill="url(#refl)" opacity="0.33"/>
+<rect x="308" y="310" width="7" height="14" fill="url(#refl)" opacity="0.20"/>
+<rect x="358" y="310" width="7" height="19" fill="url(#refl)" opacity="0.36"/>
+<rect x="333" y="310" width="7" height="20" fill="url(#refl)" opacity="0.36"/>
+<rect x="358" y="310" width="7" height="27" fill="url(#refl)" opacity="0.30"/>
+<rect x="378" y="310" width="7" height="16" fill="url(#refl)" opacity="0.31"/>
+<rect x="378" y="310" width="7" height="25" fill="url(#refl)" opacity="0.35"/>
+<rect x="429" y="310" width="7" height="13" fill="url(#refl)" opacity="0.16"/>
+<rect x="429" y="310" width="7" height="33" fill="url(#refl)" opacity="0.20"/>
+<rect x="477" y="310" width="7" height="20" fill="url(#refl)" opacity="0.28"/>
+<rect x="496" y="310" width="7" height="23" fill="url(#refl)" opacity="0.35"/>
+<rect x="513" y="310" width="7" height="16" fill="url(#refl)" opacity="0.29"/>
+<rect x="513" y="310" width="7" height="22" fill="url(#refl)" opacity="0.20"/>
+<rect x="533" y="310" width="7" height="26" fill="url(#refl)" opacity="0.21"/>
+<rect x="513" y="310" width="7" height="28" fill="url(#refl)" opacity="0.26"/>
+<rect x="533" y="310" width="7" height="26" fill="url(#refl)" opacity="0.35"/>
+<rect x="552" y="310" width="7" height="15" fill="url(#refl)" opacity="0.18"/>
+<rect x="571" y="310" width="7" height="18" fill="url(#refl)" opacity="0.19"/>
+<rect x="552" y="310" width="7" height="30" fill="url(#refl)" opacity="0.33"/>
+<rect x="592" y="310" width="7" height="22" fill="url(#refl)" opacity="0.32"/>
+<rect x="637" y="310" width="7" height="19" fill="url(#refl)" opacity="0.32"/>
+<rect x="637" y="310" width="7" height="24" fill="url(#refl)" opacity="0.31"/>
+<rect x="659" y="310" width="7" height="21" fill="url(#refl)" opacity="0.36"/>
+<rect x="704" y="310" width="7" height="15" fill="url(#refl)" opacity="0.35"/>
+<rect x="679" y="310" width="7" height="24" fill="url(#refl)" opacity="0.22"/>
+<rect x="679" y="310" width="7" height="29" fill="url(#refl)" opacity="0.28"/>
+<rect x="704" y="310" width="7" height="27" fill="url(#refl)" opacity="0.36"/>
+<rect x="748" y="310" width="7" height="13" fill="url(#refl)" opacity="0.23"/>
+<rect x="748" y="310" width="7" height="19" fill="url(#refl)" opacity="0.19"/>
+<rect x="768" y="310" width="7" height="14" fill="url(#refl)" opacity="0.25"/>
+<rect x="796" y="310" width="7" height="16" fill="url(#refl)" opacity="0.37"/>
+<rect x="796" y="310" width="7" height="22" fill="url(#refl)" opacity="0.20"/>
+<rect x="820" y="310" width="7" height="21" fill="url(#refl)" opacity="0.24"/>
+<rect x="850" y="310" width="7" height="25" fill="url(#refl)" opacity="0.34"/>
+<rect x="875" y="310" width="7" height="17" fill="url(#refl)" opacity="0.24"/>
+<rect x="901" y="310" width="7" height="32" fill="url(#refl)" opacity="0.31"/>
+<rect x="937" y="310" width="7" height="19" fill="url(#refl)" opacity="0.29"/>
+<rect x="958" y="310" width="7" height="16" fill="url(#refl)" opacity="0.20"/>
+<rect x="985" y="310" width="7" height="17" fill="url(#refl)" opacity="0.25"/>
+<rect x="1039" y="310" width="7" height="17" fill="url(#refl)" opacity="0.33"/>
+<rect x="1064" y="310" width="7" height="17" fill="url(#refl)" opacity="0.24"/>
+<rect x="1092" y="310" width="7" height="31" fill="url(#refl)" opacity="0.20"/>
+<rect x="1144" y="310" width="7" height="20" fill="url(#refl)" opacity="0.19"/>
+<rect x="1116" y="310" width="7" height="27" fill="url(#refl)" opacity="0.22"/>
+<rect x="1164" y="310" width="7" height="23" fill="url(#refl)" opacity="0.33"/>
+<rect x="1186" y="310" width="7" height="26" fill="url(#refl)" opacity="0.34"/>
+  </g>
+
+  <g transform="translate(560 332)">
+    <path d="M0 4 C0 1 10 -1 26 -1 C42 -1 52 1 52 4 C46 8 6 8 0 4 Z" fill="#16222e"/>
+    <rect x="8" y="-8" width="13" height="9" fill="#22384a"/>
+    <rect x="10" y="-6" width="3.5" height="4" fill="#8dffd0" opacity="0.85"/>
+    <line x1="27" y1="-8" x2="27" y2="-21" stroke="#2e4a58" stroke-width="2"/>
+    <circle cx="27" cy="-22" r="2.2" fill="#8dffd0" opacity="0.9"/>
+  </g>
+  <ellipse cx="586" cy="342" rx="30" ry="4" fill="#0a1218" opacity="0.7"/>
+
+  <g fill="#24424e">
+    <ellipse cx="180" cy="370" rx="6" ry="3.4"/>
+    <circle cx="186" cy="367" r="2.4"/>
+    <ellipse cx="1000" cy="380" rx="5" ry="2.9"/>
+    <circle cx="1005" cy="377" r="2.1"/>
+  </g>
+</svg>
+
+    
+
+    <svg class="hero-scene hero-art--day" viewBox="0 0 1200 440" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="skyD" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b8ddc8"/>
+      <stop offset="0.72" stop-color="#dcefdd"/>
+      <stop offset="1" stop-color="#eef7ea"/>
+    </linearGradient>
+    <radialGradient id="sunGlowD" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff3c4" stop-opacity="0.95"/>
+      <stop offset="0.45" stop-color="#ffe9a8" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="waterD" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cce8d8"/>
+      <stop offset="1" stop-color="#a8d0b8"/>
+    </linearGradient>
+    <pattern id="tulipD" width="42" height="12" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="11" height="11" rx="2" fill="#c8102e"/>
+      <rect x="15" y="0" width="11" height="11" rx="2" fill="#e0701a"/>
+      <rect x="30" y="0" width="11" height="11" rx="2" fill="#e6b31e"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="440" fill="url(#skyD)"/>
+
+  <g fill="#ffffff" opacity="0.9">
+    <ellipse cx="330" cy="92" rx="64" ry="16"/>
+    <ellipse cx="396" cy="88" rx="46" ry="13"/>
+    <ellipse cx="560" cy="58" rx="52" ry="12"/>
+    <ellipse cx="622" cy="62" rx="38" ry="10"/>
+    <ellipse cx="760" cy="150" rx="58" ry="13" opacity="0.8"/>
+    <ellipse cx="190" cy="176" rx="44" ry="11" opacity="0.7"/>
+  </g>
+
+  <circle cx="1020" cy="96" r="58" fill="url(#sunGlowD)"/>
+  <circle cx="1020" cy="96" r="28" fill="#fdeeb4"/>
+
+  <g stroke="#2c3b4d" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7">
+    <path d="M480 130 q6 -7 12 0 q6 -7 12 0"/>
+    <path d="M900 60 q5 -6 10 0 q5 -6 10 0"/>
+    <path d="M180 90 q5 -6 10 0 q5 -6 10 0"/>
+  </g>
+
+  <!-- polder horizon: fields, tulip rows, canal -->
+  <rect x="0" y="298" width="1200" height="16" fill="#9cc585"/>
+  <rect x="0" y="314" width="1200" height="46" fill="#8cb86e"/>
+  <rect x="0" y="360" width="1200" height="16" fill="url(#tulipD)" opacity="0.95"/>
+  <rect x="0" y="376" width="1200" height="20" fill="#7fb069"/>
+  <rect x="0" y="396" width="1200" height="10" fill="url(#tulipD)" opacity="0.9"/>
+  <rect x="0" y="406" width="1200" height="34" fill="url(#waterD)"/>
+
+  <g stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.55">
+    <line x1="60" y1="418" x2="150" y2="418"/>
+    <line x1="230" y1="426" x2="310" y2="426"/>
+    <line x1="420" y1="414" x2="500" y2="414"/>
+    <line x1="640" y1="428" x2="740" y2="428"/>
+    <line x1="900" y1="418" x2="980" y2="418"/>
+  </g>
+
+  <!-- distant windmill on the dike -->
+  <g transform="translate(240 308) scale(0.34)">
+    <path d="M-26 0 L-22 -95 L22 -95 L26 0 Z" fill="#4f6756"/>
+    <path d="M-22 -95 L22 -95 L18 -113 L-18 -113 Z" fill="#3f5544"/>
+    <g stroke="#3f5544" stroke-linecap="round" stroke-width="12">
+      <line x1="0" y1="-108" x2="-70" y2="-178"/>
+      <line x1="0" y1="-108" x2="70" y2="-178"/>
+      <line x1="0" y1="-108" x2="70" y2="-38"/>
+      <line x1="0" y1="-108" x2="-70" y2="-38"/>
+    </g>
+  </g>
+
+  <!-- main windmill silhouette -->
+  <g transform="translate(860 0)">
+    <ellipse cx="0" cy="330" rx="100" ry="13" fill="#6f9e58"/>
+    <path d="M-36 330 L-31 180 L31 180 L36 330 Z" fill="#2f3d4d"/>
+    <path d="M-31 180 L31 180 L27 156 L-27 156 Z" fill="#26333f"/>
+    <line x1="0" y1="156" x2="0" y2="144" stroke="#26333f" stroke-width="7"/>
+    <rect x="-5" y="216" width="10" height="14" rx="2" fill="#eef7ea"/>
+    <path d="M-7 288 q7 -12 14 0 z" fill="#1f2b38"/>
+    <circle cx="0" cy="164" r="10" fill="#1c2733"/>
+    <g stroke="#26333f" stroke-linecap="round">
+      <line x1="0" y1="164" x2="-128" y2="36" stroke-width="8"/>
+      <line x1="0" y1="164" x2="128" y2="292" stroke-width="8"/>
+      <line x1="0" y1="164" x2="128" y2="36" stroke-width="8"/>
+      <line x1="0" y1="164" x2="-128" y2="292" stroke-width="8"/>
+    </g>
+    <g stroke="#3a4a5c" stroke-width="3" stroke-linecap="round">
+      <line x1="-36" y1="138" x2="-50" y2="152"/>
+      <line x1="-72" y1="112" x2="-86" y2="126"/>
+      <line x1="-108" y1="86" x2="-122" y2="100"/>
+      <line x1="36" y1="138" x2="50" y2="152"/>
+      <line x1="72" y1="112" x2="86" y2="126"/>
+      <line x1="108" y1="86" x2="122" y2="100"/>
+      <line x1="-36" y1="190" x2="-50" y2="176"/>
+      <line x1="-72" y1="216" x2="-86" y2="202"/>
+      <line x1="-108" y1="242" x2="-122" y2="228"/>
+      <line x1="36" y1="190" x2="50" y2="176"/>
+      <line x1="72" y1="216" x2="86" y2="202"/>
+      <line x1="108" y1="242" x2="122" y2="228"/>
+    </g>
+  </g>
+</svg>
+
+    <div class="hero-copy">
+      <p class="kicker">Est. 1275 &middot; a dam on the Amstel</p>
+      <h1>Amsterdam Console</h1>
+      <p class="sub">The LLM river held by a little HTML dam. All your billing in one place.</p>
+      <p class="meta">Machine: Eve</p>
+      <p class="verse">The Amstel's dam once made this town &mdash; the river still flows through.<br>A hundred models, one console: the dam now holds them, too.</p>
+    </div>
+
+    <div class="flag-badge" aria-hidden="true">
+      <svg viewBox="0 0 64 44" width="56" height="38">
+        <rect width="64" height="44" rx="4" fill="#0b0b12"/>
+        <rect x="2" y="2" width="60" height="13.3" fill="#c8102e"/>
+        <rect x="2" y="15.3" width="60" height="13.3" fill="#0b0b12"/>
+        <rect x="2" y="28.6" width="60" height="13.3" fill="#c8102e"/>
+        <g stroke="#fff" stroke-width="2.4" stroke-linecap="round">
+          <path d="M12 19 L20 27 M20 19 L12 27"/>
+          <path d="M30 19 L38 27 M38 19 L30 27"/>
+          <path d="M48 19 L56 27 M56 19 L48 27"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="theme-wrap">
+      <span class="demo-badge" id="demo-badge" hidden>Sample data</span>
+      <label class="theme-picker" for="theme-select">
+        <span class="theme-picker-label">Theme</span>
+        <select id="theme-select" class="theme-select" aria-label="Choose theme">
+          <option value="auto">Auto</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main id="main" class="workspace">
+  <!-- ── credits remaining ─────────────────────────────────────── -->
+  <section class="credits" id="credits" aria-label="Total remaining credits">
+    <canvas class="sparkline" id="credits-spark" aria-hidden="true"></canvas>
+    <div class="credits-body">
+      <p class="credits-label">Credits remaining <span class="live-dot" aria-hidden="true"></span></p>
+      <p class="credits-value" id="credits-total">&mdash;</p>
+      <p class="credits-split" id="credits-split">&mdash;</p>
+    </div>
+    <p class="credits-note">Live totals from provider APIs. For providers without one, click <b>edit</b> on a chip to set the remaining credits. Run <code>amster serve</code> for live mode.</p>
+  </section>
+
+  <div class="warning">
+    <span>Never paste API keys here — this is a console launcher only.</span>
+  </div>
+
+  <!-- billing summary — populated by data/billing.js and /api/billing -->
+  <div id="billing-toolbar">
+    <span id="billing-status"></span>
+    <button id="refresh-btn" class="btn ghost" type="button">Refresh</button>
+  </div>
+  <div id="billing-summary"></div>
+
+
+  <!-- spend by Pi — populated from data/billing.js and /api/billing -->
+  <div id="pi-spend-section">
+    <h2 class="toggle" id="pi-spend-toggle" role="button" tabindex="0" aria-expanded="true" aria-controls="pi-spend-content">
+      <span class="dot" aria-hidden="true"></span>Spend by Pi
+      <span class="chevron" aria-hidden="true">&#9658;</span>
+    </h2>
+    <section class="credits spend-blob" id="pi-spend-blob" aria-label="Total Pi spend" hidden>
+      <canvas class="sparkline" id="pi-spark" aria-hidden="true"></canvas>
+      <div class="credits-body">
+        <p class="credits-label">Total spend (actual) <span class="live-dot" aria-hidden="true"></span></p>
+        <p class="credits-value" id="pi-spend-blob-total">&mdash;</p>
+        <p class="credits-split" id="pi-spend-blob-split">&mdash;</p>
+      </div>
+      <p class="credits-note">Actual billed spend from Pi session logs. Click <b>Spend by Pi</b> to expand the full table.</p>
+    </section>
+    <div id="pi-spend-content">
+      <div id="pi-summary"></div>
+      <table id="pi-spend-table" aria-label="Spend by Pi">
+        <thead>
+          <tr>
+            <th scope="col">Model</th>
+            <th scope="col">Provider</th>
+            <th scope="col">Sessions</th>
+            <th scope="col">Calls</th>
+            <th scope="col">Tokens</th>
+            <th scope="col">Cost</th>
+            <th scope="col">Last seen</th>
+          </tr>
+        </thead>
+        <tbody id="pi-spend-body"></tbody>
+      </table>
+      <div class="hint" id="pi-spend-empty">No Pi usage recorded yet.</div>
+    </div>
+  </div>
+
+  <!-- spend by model — populated from data/billing.js and /api/billing -->
+  <h2 class="toggle" id="spend-toggle" role="button" tabindex="0" aria-expanded="true" aria-controls="spend-section">
+    <span class="dot" aria-hidden="true"></span>Spend by model
+    <span class="chevron" aria-hidden="true">&#9658;</span>
+  </h2>
+  <section class="credits spend-blob" id="spend-blob" aria-label="Total estimated spend" hidden>
+    <canvas class="sparkline" id="spend-spark" aria-hidden="true"></canvas>
+    <div class="credits-body">
+      <p class="credits-label">Total spend (est.) <span class="live-dot" aria-hidden="true"></span></p>
+      <p class="credits-value" id="spend-blob-total">&mdash;</p>
+      <p class="credits-split" id="spend-blob-split">&mdash;</p>
+    </div>
+    <p class="credits-note">Estimated spend from the Hermes state DB. Click <b>Spend by model</b> to expand the full table.</p>
+  </section>
+  <div id="spend-section">
+    <div class="table-tools">
+    <label class="sr-only" for="model-filter">Filter spend by model</label>
+    <select id="model-filter" class="model-filter" aria-label="Filter spend by model">
+      <option value="">All models</option>
+    </select>
+    <div class="columns-wrap">
+      <button id="columns-btn" class="btn ghost" type="button" aria-expanded="false" aria-controls="columns-panel">Columns</button>
+      <div id="columns-panel" class="columns-panel" hidden>
+        <fieldset>
+          <legend>Show columns</legend>
+          <label><input type="checkbox" data-col="model" checked> Model</label>
+          <label><input type="checkbox" data-col="provider" checked> Provider</label>
+          <label><input type="checkbox" data-col="sessions" checked> Sessions</label>
+          <label><input type="checkbox" data-col="calls" checked> Calls</label>
+          <label><input type="checkbox" data-col="inputTokens" checked> Tokens in</label>
+          <label><input type="checkbox" data-col="outputTokens" checked> Tokens out</label>
+          <label><input type="checkbox" data-col="estimatedCostUsd" checked> Est. cost</label>
+          <label><input type="checkbox" data-col="costStatus" checked> Status</label>
+        </fieldset>
+      </div>
+    </div>
+  </div>
+  <table id="spend-table" aria-label="Spend by model">
+    <thead>
+      <tr>
+        <th scope="col" data-sort-key="model">Model<span class="sort-indicator" aria-hidden="true"></span></th>
+        <th scope="col" data-sort-key="provider">Provider<span class="sort-indicator" aria-hidden="true"></span></th>
+        <th scope="col" data-sort-key="sessions">Sessions<span class="sort-indicator" aria-hidden="true"></span></th>
+        <th scope="col" data-sort-key="calls">Calls<span class="sort-indicator" aria-hidden="true"></span></th>
+        <th scope="col" data-sort-key="inputTokens">Tokens in<span class="sort-indicator" aria-hidden="true"></span></th>
+        <th scope="col" data-sort-key="outputTokens">Tokens out<span class="sort-indicator" aria-hidden="true"></span></th>
+        <th scope="col" data-sort-key="estimatedCostUsd">Est. cost<span class="sort-indicator" aria-hidden="true"></span></th>
+        <th scope="col" data-sort-key="costStatus">Status<span class="sort-indicator" aria-hidden="true"></span></th>
+      </tr>
+    </thead>
+    <tbody id="spend-body"></tbody>
+  </table>
+  <div class="hint" id="spend-unavailable">Spend data unavailable — needs the local Hermes state DB (host daemon mode). Run <code>amster serve</code> on the host.</div>
+  <div class="hint" id="spend-empty">No usage recorded yet.</div>
+  </div>
+
+  </main>
+
+  <aside class="dock" aria-label="Provider consoles">
+  <label class="sr-only" for="search">Filter providers</label>
+  <input id="search" type="text" placeholder="Filter providers…" autocomplete="off">
+
+  <h2><span class="dot" aria-hidden="true"></span>Detected on this machine</h2>
+  <div class="cards" data-group="detected" id="detected-cards"></div>
+  <div class="hint" id="detected-empty">No providers detected — add API keys to <code>.env</code>, then run <code>amster serve</code>.</div>
+
+  <h2 class="toggle" id="extra-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="extra-cards">
+    <span class="dot" aria-hidden="true"></span>Available platforms
+    <span class="count" id="extra-count"></span>
+    <span class="chevron" aria-hidden="true">&#9658;</span>
+  </h2>
+  <div class="cards collapsed" data-group="extra" id="extra-cards">
+    <!-- Provider cards are rendered from src/providers/catalog.js. -->
+  </div>
+
+  <div class="empty" id="empty">Nothing matches that filter.</div>
+  </aside>
+
+  <footer>
+    <p>Amsterdam Console &middot; Offline &middot; No tracking &middot; No secrets</p>
+  </footer>
+</div>
+
+<!-- onboarding tour — demo mode (?demo) -->
+<div id="tour-root" hidden>
+  <div class="tour-backdrop" id="tour-backdrop"></div>
+  <div class="tour-box" id="tour-box" role="dialog" aria-modal="true" aria-labelledby="tour-title" aria-describedby="tour-text" tabindex="-1">
+    <h2 id="tour-title"></h2>
+    <p id="tour-text"></p>
+    <div class="tour-nav">
+      <span id="tour-progress" aria-live="polite"></span>
+      <button id="tour-skip" class="btn ghost" type="button">Skip tour</button>
+      <button id="tour-prev" class="btn ghost" type="button">Back</button>
+      <button id="tour-next" class="btn" type="button">Next</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Demo mode: ?demo in the URL loads the sample fixture from
+     demo/billing.js instead of the generated snapshot. document.write
+     keeps the load synchronous, so window.BILLING is ready before the
+     app script below runs. */
+  var AMS_DEMO = /[?&]demo([=&]|$)/.test(location.search);
+  document.write('<script src="' + (AMS_DEMO ? 'demo/billing.js' : 'data/billing.js') + '"><\/script>');
+</script>
+<script>
+  /* ── provider cards ──────────────────────────────────────────── */
+  // Rendered from src/providers/catalog.js so a new provider appears
+  // here automatically. Cards with a key are detection-tracked via
+  // data-provider; link-only cards stay in the Available list.
+  function renderProviderCards() {
+    var list = window.AMS_PROVIDERS || [];
+    var host = document.getElementById('extra-cards');
+    if (!host) return;
+    host.innerHTML = list.map(function (p) {
+      var local = p.tag === 'No billing';
+      var tag = local ? 'tag local' : 'tag';
+      var provider = p.envKey ? ' data-provider="' + p.id + '"' : '';
+      var envLine = p.envLabel || (p.envKey
+        ? 'Env: ' + p.envKey + (p.baseUrlEnv ? ' / ' + p.baseUrlEnv : '')
+        : '');
+      var btnClass = local ? 'btn ghost' : 'btn';
+      var btnLabel = local ? 'Open local' : 'Open console';
+      return '<div class="card" data-name="' + escapeHtml(p.search || p.name.toLowerCase()) + '"' + provider + '>'
+        + '<h3>' + escapeHtml(p.name) + '</h3>'
+        + '<span class="' + tag + '">' + escapeHtml(p.tag) + '</span>'
+        + '<p class="note">' + escapeHtml(p.note || '') + '</p>'
+        + (envLine ? '<p class="envs">' + escapeHtml(envLine) + '</p>' : '')
+        + '<a class="' + btnClass + '" href="' + escapeHtml(p.consoleUrl) + '" target="_blank" rel="noopener noreferrer">' + btnLabel + '</a>'
+        + '</div>';
+    }).join('');
+  }
+
+  renderProviderCards();
+
+  /* ── helpers ────────────────────────────────────────────────── */
+  function currencySymbol(provider) {
+    if (provider.currency === "CNY") return "¥";
+    if (provider.currency === "EUR") return "€";
+    return "$";
+  }
+
+  /* ── manual credits ─────────────────────────────────────────── */
+  // Verified-only providers have no billing API, so the user can
+  // type a balance in. In live mode the numbers live in a small
+  // server-side SQLite store (data/manual-credits.db) so every
+  // browser on the machine shares them; localStorage is only the
+  // fallback when the server is unreachable.
+  var MANUAL_STORAGE = 'amsterdam.manualCredits';
+
+  function readLocalManualCredits() {
+    var manual = {};
+    try { manual = JSON.parse(localStorage.getItem(MANUAL_STORAGE)) || {}; } catch (e) { manual = {}; }
+    return manual;
+  }
+
+  // Module-level cache: bootstrapped from localStorage, replaced by
+  // the server copy on the first live refresh.
+  var manualCredits = readLocalManualCredits();
+
+  function normalizeManualCredits(data) {
+    var out = {};
+    if (data && typeof data === 'object') {
+      Object.keys(data).forEach(function (id) {
+        var v = Number(data[id]);
+        if (isFinite(v) && v >= 0) out[id] = v;
+      });
+    }
+    return out;
+  }
+
+  function loadManualCredits() {
+    if (!live) {
+      manualCredits = readLocalManualCredits();
+      return Promise.resolve(manualCredits);
+    }
+    return fetch('/api/manual-credits')
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) {
+        manualCredits = normalizeManualCredits(data);
+        return manualCredits;
+      })
+      .catch(function () {
+        manualCredits = readLocalManualCredits();
+        return manualCredits;
+      });
+  }
+
+  // Live mode POSTs the single changed entry to the server; on
+  // failure the entry falls back to localStorage.
+  function saveManualCredits(manual, changedId) {
+    if (!live) {
+      try { localStorage.setItem(MANUAL_STORAGE, JSON.stringify(manual)); } catch (e) {}
+      return;
+    }
+    var amount = manual && manual[changedId] != null ? Number(manual[changedId]) : null;
+    fetch('/api/manual-credits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: changedId, amount: amount }),
+    })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) {
+        manualCredits = normalizeManualCredits(data);
+        applyBilling(window.BILLING);
+      })
+      .catch(function () {
+        try { localStorage.setItem(MANUAL_STORAGE, JSON.stringify(manual)); } catch (e) {}
+      });
+  }
+
+  function manualValue(id) {
+    var v = manualCredits[id];
+    return v != null && v >= 0 ? Number(v) : null;
+  }
+
+  /* ── billing summary ────────────────────────────────────────── */
+  function formatChip(id, data) {
+    if (!data || !data.detected) return { cls: "off", value: "—" };
+    if (data.error)              return { cls: "error", value: data.error };
+    if (data.balance != null) {
+      return { cls: "balance", value: currencySymbol(data) + data.balance.toFixed(2) };
+    }
+    if (data.usage != null) {
+      var limit = data.limit != null ? " / $" + data.limit.toFixed(2) : "";
+      return { cls: "usage", value: "$" + data.usage.toFixed(2) + " used" + limit };
+    }
+    if (data.username)       return { cls: "verified", value: data.username };
+    // Manual budget chip (Pi): remaining = credit minus real spend.
+    if (data.kind === "manual" && data.spend != null) {
+      if (data.remaining != null) {
+        return { cls: "balance", value: "$" + data.remaining.toFixed(2) + " left", editable: true };
+      }
+      return { cls: "usage", value: "$" + data.spend.toFixed(2) + " spent - edit to set credit", editable: true };
+    }
+    // Verified-only providers (no billing API): a manually tracked
+    // balance overrides the badge; the chip stays editable.
+    if (data.verified) {
+      var manual = data.credit != null ? Number(data.credit) : manualValue(id);
+      if (manual != null) {
+        return { cls: "balance", value: "$" + manual.toFixed(2), editable: true };
+      }
+      return { cls: "verified", value: "verified", editable: true };
+    }
+    return { cls: "off", value: "?" };
+  }
+
+  /* ── credits remaining ──────────────────────────────────────── */
+  function totalCredits(billing) {
+    var ids = [];
+    var total = 0;
+    Object.keys(billing.providers).forEach(function (id) {
+      var p = billing.providers[id];
+      if (!p || !p.detected) return;
+      if (p.kind === "manual") return; // pi is a budget, not a wallet balance
+      if (p.balance != null) {
+        ids.push(id);
+        total += p.balance;
+      } else if (manualValue(id) != null) {
+        ids.push(id);
+        total += manualValue(id);
+      }
+    });
+    var split = ids.map(function (id) {
+      var p = billing.providers[id];
+      var name = id.charAt(0).toUpperCase() + id.slice(1);
+      var value = p.balance != null ? p.balance : manualValue(id);
+      var suffix = p.balance != null ? "" : " (manual)";
+      return name + " " + currencySymbol(p) + value.toFixed(2) + suffix;
+    }).join(" + ");
+    return { total: total, count: ids.length, split: split };
+  }
+
+  function renderCredits(billing) {
+    var valueEl = document.getElementById("credits-total");
+    var splitEl = document.getElementById("credits-split");
+    if (!billing) {
+      valueEl.textContent = "—";
+      splitEl.textContent = "Run amster serve to open the floodgates";
+      return;
+    }
+    var credits = totalCredits(billing);
+    if (credits.count === 0) {
+      valueEl.textContent = "—";
+      splitEl.textContent = "No live balances reported yet";
+      recordSpark("credits", null);
+      return;
+    }
+    valueEl.textContent = "$" + credits.total.toFixed(2);
+    splitEl.textContent = credits.split;
+    recordSpark("credits", credits.total);
+  }
+
+  /* ── spend by model ─────────────────────────────────────────── */
+  // Sort state lives at module scope so the 2.5-min auto-refresh
+  // re-renders keep the user's chosen column and direction.
+  var sortState = { key: 'estimatedCostUsd', dir: 'desc' };
+  var TEXT_SORT_KEYS = ['model', 'provider', 'costStatus'];
+
+  function spendSortValue(model, key) {
+    switch (key) {
+      case 'model':        return String(model.model || '').toLowerCase();
+      case 'provider':     return String(model.provider || '').toLowerCase();
+      case 'sessions':     return model.sessions;
+      case 'calls':        return model.calls;
+      case 'inputTokens':  return model.inputTokens;
+      case 'outputTokens': return model.outputTokens;
+      case 'estimatedCostUsd':
+        if (model.costStatus === 'local') return 0;
+        return model.costStatus === 'estimated' && model.estimatedCostUsd != null
+          ? model.estimatedCostUsd
+          : null;
+      case 'costStatus':   return String(model.costStatus || 'unknown').toLowerCase();
+    }
+    return null;
+  }
+
+  function compareSpendModels(a, b) {
+    var key = sortState.key;
+    var dir = sortState.dir === 'asc' ? 1 : -1;
+    var av  = spendSortValue(a, key);
+    var bv  = spendSortValue(b, key);
+    var aNa = av == null;
+    var bNa = bv == null;
+    if (aNa && bNa) return 0;
+    if (aNa) return 1;  // missing values stay at the bottom, either direction
+    if (bNa) return -1;
+    if (typeof av === 'number' && typeof bv === 'number') {
+      return av < bv ? -dir : av > bv ? dir : 0;
+    }
+    return String(av).localeCompare(String(bv)) * dir;
+  }
+
+  function sortSpendModels(models) {
+    return models.slice().sort(compareSpendModels);
+  }
+
+  function updateSortIndicator() {
+    Array.from(document.querySelectorAll('#spend-table thead th')).forEach(function (th) {
+      var indicator = th.querySelector('.sort-indicator');
+      var active    = th.getAttribute('data-sort-key') === sortState.key;
+      if (indicator) {
+        indicator.textContent = active ? (sortState.dir === 'asc' ? '\u25B2' : '\u25BC') : '';
+      }
+      th.setAttribute('aria-sort', active ? (sortState.dir === 'asc' ? 'ascending' : 'descending') : 'none');
+      th.classList.toggle('active', active);
+    });
+  }
+
+  function sortHandler(event) {
+    var th  = event.target.closest('th');
+    var key = th && th.getAttribute('data-sort-key');
+    if (!key) return;
+    if (sortState.key === key) {
+      sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortState.key = key;
+      sortState.dir = TEXT_SORT_KEYS.indexOf(key) !== -1 ? 'asc' : 'desc';
+    }
+    renderSpend(window.BILLING);
+  }
+
+  document.querySelector('#spend-table thead').addEventListener("click", sortHandler);
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatTokens(n) {
+    if (n == null) return '—';
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+    return String(n);
+  }
+
+  function formatSpendCost(model) {
+    if (model.costStatus === 'local') return 'free';
+    if (model.costStatus !== 'estimated' || model.estimatedCostUsd == null) return 'n/a';
+    return '$' + model.estimatedCostUsd.toFixed(2);
+  }
+
+  /* ── column visibility ─────────────────────────────────────── */
+  var COLUMN_KEYS = ['model', 'provider', 'sessions', 'calls', 'inputTokens', 'outputTokens', 'estimatedCostUsd', 'costStatus'];
+  var COLUMNS_STORAGE = 'amsterdam.columns';
+
+  function loadColumnState() {
+    var state = {};
+    try { state = JSON.parse(localStorage.getItem(COLUMNS_STORAGE)) || {}; } catch (e) { state = {}; }
+    COLUMN_KEYS.forEach(function (key) { state[key] = state[key] !== false; });
+    if (!COLUMN_KEYS.some(function (key) { return state[key]; })) state.model = true;
+    return state;
+  }
+
+  var columnState = loadColumnState();
+
+  function syncColumnCheckboxes() {
+    Array.from(document.querySelectorAll('#columns-panel input')).forEach(function (box) {
+      box.checked = columnState[box.getAttribute('data-col')] !== false;
+    });
+  }
+
+  function spendCell(m, key, known) {
+    switch (key) {
+      case 'model':        return '<td class="model">' + escapeHtml(m.model) + '</td>';
+      case 'provider':     return '<td>' + escapeHtml(m.provider || '—') + '</td>';
+      case 'sessions':     return '<td class="num">' + (m.sessions == null ? '—' : m.sessions) + '</td>';
+      case 'calls':        return '<td class="num">' + (m.calls == null ? '—' : m.calls) + '</td>';
+      case 'inputTokens':  return '<td class="num">' + formatTokens(m.inputTokens) + '</td>';
+      case 'outputTokens': return '<td class="num">' + formatTokens(m.outputTokens) + '</td>';
+      case 'estimatedCostUsd':
+        return '<td class="cost' + (known ? '' : ' na') + '">' + formatSpendCost(m) + '</td>';
+      case 'costStatus':   return '<td>' + escapeHtml(m.costStatus || 'unknown') + '</td>';
+    }
+    return '';
+  }
+
+  var columnsBtn   = document.getElementById('columns-btn');
+  var columnsPanel = document.getElementById('columns-panel');
+  var columnsWrap  = columnsBtn ? columnsBtn.closest('.columns-wrap') : null;
+  var columnsOpen  = false;
+
+  function setColumnsPanel(open) {
+    columnsOpen = open;
+    columnsPanel.hidden = !open;
+    columnsBtn.setAttribute('aria-expanded', String(open));
+  }
+
+  if (columnsBtn) {
+    columnsBtn.addEventListener('click', function () { setColumnsPanel(!columnsOpen); });
+
+    columnsPanel.addEventListener('change', function (e) {
+      var box = e.target;
+      if (!box || !box.hasAttribute('data-col')) return;
+      var next = columnState[box.dataset.col] === false;
+      var keepsOne = COLUMN_KEYS.some(function (key) {
+        return key === box.dataset.col ? next : columnState[key];
+      });
+      if (!keepsOne) { box.checked = true; return; } // at least one column stays
+      columnState[box.dataset.col] = next;
+      try { localStorage.setItem(COLUMNS_STORAGE, JSON.stringify(columnState)); } catch (err) {}
+      renderSpend(window.BILLING);
+    });
+
+    document.addEventListener('click', function (e) {
+      if (columnsOpen && columnsWrap && !columnsWrap.contains(e.target)) setColumnsPanel(false);
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && columnsOpen) setColumnsPanel(false);
+    });
+  }
+
+  /* ── model filter ───────────────────────────────────────────── */
+  var MODEL_FILTER_STORAGE = 'amsterdam.modelFilter';
+  var modelFilter = '';
+  try { modelFilter = localStorage.getItem(MODEL_FILTER_STORAGE) || ''; } catch (e) { modelFilter = ''; }
+
+  // Rebuild the dropdown from the current snapshot so the option list
+  // stays in sync with live data. The choice survives refreshes and
+  // resets to "All models" when the model disappears from the data.
+  function syncModelFilter(models) {
+    var filterEl = document.getElementById('model-filter');
+    if (!filterEl) return;
+    var names = [];
+    models.forEach(function (m) {
+      var n = String(m.model || '');
+      if (n && names.indexOf(n) === -1) names.push(n);
+    });
+    names.sort(function (a, b) { return a.localeCompare(b); });
+    if (names.indexOf(modelFilter) === -1) modelFilter = '';
+    var options = '<option value="">All models</option>' + names.map(function (n) {
+      return '<option value="' + escapeHtml(n) + '"' + (n === modelFilter ? ' selected' : '') + '>' + escapeHtml(n) + '</option>';
+    }).join('');
+    filterEl.innerHTML = options;
+    filterEl.disabled = names.length < 2;
+  }
+
+  var modelFilterEl = document.getElementById('model-filter');
+  if (modelFilterEl) {
+    modelFilterEl.addEventListener('change', function () {
+      modelFilter = modelFilterEl.value;
+      try { localStorage.setItem(MODEL_FILTER_STORAGE, modelFilter); } catch (err) {}
+      renderSpend(window.BILLING);
+    });
+  }
+
+  function renderSpend(billing) {
+    var spend      = billing && billing.spend;
+    var table      = document.getElementById('spend-table');
+    var unavailable = document.getElementById('spend-unavailable');
+    var empty      = document.getElementById('spend-empty');
+    unavailable.classList.remove('show');
+    empty.classList.remove('show');
+
+    /* Collapsed-state summary: total + per-provider split, computed
+       from the same rows the table shows (claude/anthropic purged). */
+    var blobTotal = document.getElementById('spend-blob-total');
+    var blobSplit = document.getElementById('spend-blob-split');
+    var total = 0;
+    var byProvider = {};
+    var counted = 0;
+    if (spend && spend.models) {
+      spend.models.forEach(function (m) {
+        var name = String(m.model || '').toLowerCase();
+        if (name.indexOf('claude') === 0 || (m.provider || '') === 'anthropic') return;
+        if (m.estimatedCostUsd == null) return;
+        var key = m.provider || 'unknown';
+        total += m.estimatedCostUsd;
+        byProvider[key] = (byProvider[key] || 0) + m.estimatedCostUsd;
+        counted++;
+      });
+    }
+    var providerKeys = Object.keys(byProvider);
+    if (providerKeys.length) {
+      blobTotal.textContent = '$' + total.toFixed(2);
+      blobSplit.textContent = providerKeys.map(function (k) {
+        return k + ' $' + byProvider[k].toFixed(2);
+      }).join(' + ');
+    } else if (spend && spend.models && spend.models.length) {
+      blobTotal.textContent = '$0.00';
+      blobSplit.textContent = spend.models.length + ' models \u00b7 no estimated costs';
+    } else {
+      blobTotal.textContent = 'n/a';
+      blobSplit.textContent = 'No Hermes spend data';
+    }
+
+    recordSpark("spend", spend && spend.models ? total : null);
+
+    if (!spend) {
+      table.style.display = 'none';
+      unavailable.classList.add('show');
+      syncModelFilter([]);
+      return;
+    }
+    // Anthropic was purged from the console: its usage history is
+    // filtered out of the spend table entirely. Anthropic models are
+    // all named claude-*, whatever billing provider labels them.
+    // (The data layer already purges; this guards old snapshots.)
+    var models = spend.models.filter(function (m) {
+      var name = String(m.model || '').toLowerCase();
+      return name.indexOf('claude') !== 0 && (m.provider || '') !== 'anthropic';
+    });
+    syncModelFilter(models);
+    if (modelFilter) {
+      models = models.filter(function (m) { return String(m.model || '') === modelFilter; });
+    }
+    if (models.length === 0) {
+      table.style.display = 'none';
+      empty.textContent = modelFilter ? 'No models match the filter.' : 'No usage recorded yet.';
+      empty.classList.add('show');
+      return;
+    }
+
+    table.style.display = 'table';
+    Array.from(document.querySelectorAll('#spend-table th')).forEach(function (th) {
+      th.hidden = !columnState[th.getAttribute('data-sort-key')];
+    });
+    syncColumnCheckboxes();
+    var visible = COLUMN_KEYS.filter(function (key) { return columnState[key]; });
+    var rows = sortSpendModels(models).map(function (m) {
+      var title = m.lastSeen ? ' title="Last seen ' + m.lastSeen + '"' : '';
+      var known = (m.costStatus === 'estimated' || m.costStatus === 'local') && m.estimatedCostUsd != null;
+      var cells = visible.map(function (key) { return spendCell(m, key, known); }).join('');
+      return '<tr' + title + '>' + cells + '</tr>';
+    }).join('');
+    document.getElementById('spend-body').innerHTML = rows;
+    updateSortIndicator();
+  }
+
+  /* ── spend by Pi ────────────────────────────────────────────── */
+  function formatPiCost(model) {
+    if (model.costUsd == null) return 'n/a';
+    return '$' + model.costUsd.toFixed(2);
+  }
+
+  function renderPiSpend(billing) {
+    var pi      = billing && billing.piSpend;
+    var section = document.getElementById('pi-spend-section');
+    if (!pi) {
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = '';
+
+    var table = document.getElementById('pi-spend-table');
+    var empty = document.getElementById('pi-spend-empty');
+    empty.classList.remove('show');
+
+    var hermes = billing && billing.spend;
+    var hermesTotal = hermes && hermes.totalEstimatedUsd != null
+      ? '$' + hermes.totalEstimatedUsd.toFixed(2)
+      : 'n/a';
+    var piTotal = pi.totalUsd == null ? 'n/a' : '$' + pi.totalUsd.toFixed(2);
+    document.getElementById('pi-summary').textContent =
+      'Pi total: ' + piTotal + ' (actual) · ' + pi.sessionCount
+      + ' sessions · ' + pi.modelCount + ' models — Hermes total: '
+      + hermesTotal + ' (estimated)';
+
+    /* Collapsed-state summary: total + per-provider split from the
+       same rows the table shows. */
+    var piModels = pi.models || [];
+    var blobTotal = document.getElementById('pi-spend-blob-total');
+    var blobSplit = document.getElementById('pi-spend-blob-split');
+    var total = 0;
+    var byProvider = {};
+    piModels.forEach(function (m) {
+      if (m.costUsd == null) return;
+      total += m.costUsd;
+      var key = m.provider || 'unknown';
+      byProvider[key] = (byProvider[key] || 0) + m.costUsd;
+    });
+    var providerKeys = Object.keys(byProvider);
+    if (providerKeys.length) {
+      blobTotal.textContent = '$' + total.toFixed(2);
+      blobSplit.textContent = providerKeys.map(function (k) {
+        return k + ' $' + byProvider[k].toFixed(2);
+      }).join(' + ');
+    } else if (piModels.length) {
+      blobTotal.textContent = '$0.00';
+      blobSplit.textContent = piModels.length + ' models \u00b7 no costs';
+    } else {
+      blobTotal.textContent = 'n/a';
+      blobSplit.textContent = 'No Pi session logs';
+    }
+
+    recordSpark("pi", piModels.length ? total : null);
+
+    var models = (pi.models || []).slice().sort(function (a, b) {
+      return (b.costUsd || 0) - (a.costUsd || 0)
+        || String(a.model).localeCompare(String(b.model));
+    });
+    if (models.length === 0) {
+      table.style.display = 'none';
+      empty.classList.add('show');
+      return;
+    }
+
+    table.style.display = 'table';
+    var rows = models.map(function (m) {
+      var title = m.lastSeen ? ' title="Last seen ' + m.lastSeen + '"' : '';
+      var tokens = m.totalTokens == null ? '—' : formatTokens(m.totalTokens);
+      return '<tr' + title + '>'
+        + '<td class="model">' + escapeHtml(m.model) + '</td>'
+        + '<td>' + escapeHtml(m.provider || '—') + '</td>'
+        + '<td class="num">' + m.sessions + '</td>'
+        + '<td class="num">' + m.calls + '</td>'
+        + '<td class="num">' + tokens + '</td>'
+        + '<td class="cost">' + formatPiCost(m) + '</td>'
+        + '<td>' + (m.lastSeen ? escapeHtml(m.lastSeen) : '—') + '</td>'
+        + '</tr>';
+    }).join('');
+    document.getElementById('pi-spend-body').innerHTML = rows;
+  }
+
+  var REFRESH_INTERVAL_MS = 150000; // 2.5 minutes
+  var live = !AMS_DEMO && (location.protocol === "http:" || location.protocol === "https:");
+  var summaryEl = document.getElementById("billing-summary");
+  var statusEl  = document.getElementById("billing-status");
+
+  function renderSummary(billing) {
+    if (!billing) {
+      summaryEl.innerHTML = '<div id="billing-prompt">Run <code>amster serve</code> to open the floodgates</div>';
+      return;
+    }
+
+    var liveIds = Object.keys(billing.providers).filter(function (id) {
+      return billing.providers[id] && billing.providers[id].detected;
+    });
+
+    if (liveIds.length === 0) {
+      summaryEl.innerHTML = '<div id="billing-prompt">No providers detected — add keys to <code>.env</code></div>';
+      return;
+    }
+
+    var html = "";
+    liveIds.forEach(function (id) {
+      var chip = formatChip(id, billing.providers[id]);
+      html += '<div class="chip ' + chip.cls + '" data-provider="' + id + '">'
+            + '<span class="chip-name">' + id + '</span>'
+            + '<span class="chip-value">' + chip.value + '</span>';
+      if (chip.editable) {
+        html += '<button class="chip-edit" type="button">edit</button>'
+              + '<span class="chip-editor" hidden>'
+              + '<input type="number" min="0" step="0.01" placeholder="0.00" aria-label="Remaining ' + id + ' credits in USD">'
+              + '<button type="button" class="chip-save">Save</button>'
+              + '</span>';
+      }
+      html += '</div>';
+    });
+
+    var ts = new Date(billing.timestamp);
+    html += '<div id="billing-time">' + liveIds.length + ' live · Fetched ' + ts.toLocaleTimeString()
+          + ' · auto-refresh 2.5 min</div>';
+    summaryEl.innerHTML = html;
+  }
+
+  function organizeCards(billing) {
+    var detected = document.getElementById("detected-cards");
+    var extra    = document.getElementById("extra-cards");
+
+    Array.from(document.querySelectorAll(".card[data-provider]")).forEach(function (card) {
+      var id         = card.dataset.provider;
+      var isDetected = !!(billing && billing.providers[id] && billing.providers[id].detected);
+      var target     = isDetected ? detected : extra;
+      if (card.parentElement !== target) target.appendChild(card);
+    });
+
+    document.getElementById("detected-empty").classList.toggle(
+      "show",
+      detected.querySelectorAll(".card").length === 0
+    );
+    document.getElementById("extra-count").textContent =
+      "(" + extra.querySelectorAll(".card").length + ")";
+  }
+
+  function applyBilling(billing) {
+    renderCredits(billing);
+    renderSummary(billing);
+    renderSpend(billing);
+    renderPiSpend(billing);
+    organizeCards(billing);
+  }
+
+  function setStatus(text, cls) {
+    statusEl.innerHTML = text;
+    statusEl.className = cls || "";
+  }
+
+  function idleStatus() {
+    if (AMS_DEMO) {
+      setStatus('Demo mode — sample data, not real balances · <button id="tour-replay" class="btn ghost" type="button">Replay tour</button>');
+      var badge = document.getElementById('demo-badge');
+      if (badge) badge.hidden = false;
+      return;
+    }
+    setStatus('Static snapshot — run <code>amster serve</code> for live updates');
+  }
+
+  function refresh(manual) {
+    if (!live) {
+      applyBilling(window.BILLING);
+      idleStatus();
+      return;
+    }
+    if (manual) setStatus('Refreshing…');
+    loadManualCredits()
+      .then(function () {
+        return fetch('/api/billing')
+          .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+      })
+      .then(function (data) {
+        window.BILLING = data;
+        applyBilling(data);
+        setStatus('Live · auto-refresh every 2.5 min', 'live');
+      })
+      .catch(function (err) {
+        setStatus('Refresh failed (' + err.message + ') — retrying in 2.5 min', 'error');
+      });
+  }
+
+  document.getElementById("refresh-btn").addEventListener("click", function () {
+    refresh(true);
+  });
+
+  /* ── manual credits editing ─────────────────────────────────── */
+  summaryEl.addEventListener('click', function (e) {
+    var editBtn = e.target.closest('.chip-edit');
+    if (editBtn) {
+      var editor = editBtn.closest('.chip').querySelector('.chip-editor');
+      editor.hidden = !editor.hidden;
+      if (!editor.hidden) editor.querySelector('input').focus();
+      return;
+    }
+    var saveBtn = e.target.closest('.chip-save');
+    if (saveBtn) {
+      var chip = saveBtn.closest('.chip');
+      var id = chip.dataset.provider;
+      var value = parseFloat(chip.querySelector('.chip-editor input').value);
+      if (isNaN(value) || value < 0) {
+        delete manualCredits[id];
+      } else {
+        manualCredits[id] = value;
+      }
+      saveManualCredits(manualCredits, id);
+      applyBilling(window.BILLING);
+    }
+  });
+
+  /* ── micro sparklines: rolling usage history behind the HUD ── */
+  var sparkState = { credits: [], spend: [], pi: [] };
+  var SPARK_MAX = 48;
+
+  function cssVar(name, fallback) {
+    var value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+  }
+
+  function withAlpha(color, alpha) {
+    if (color.charAt(0) === '#') {
+      var hex = color.slice(1);
+      if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      var r = parseInt(hex.slice(0, 2), 16);
+      var g = parseInt(hex.slice(2, 4), 16);
+      var b = parseInt(hex.slice(4, 6), 16);
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+    }
+    return 'rgba(0,229,255,' + alpha + ')';
+  }
+
+  function drawSparkline(key) {
+    var canvas = document.getElementById(key + '-spark');
+    var series = sparkState[key];
+    if (!canvas || !series) return;
+    var w = canvas.clientWidth;
+    var h = canvas.clientHeight;
+    if (!w || !h) return;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    if (series.length < 2) return;
+
+    var pad = 8;
+    var min = Math.min.apply(null, series);
+    var max = Math.max.apply(null, series);
+    var range = (max - min) || 1;
+    var color = cssVar('--spark', '#00e5ff');
+    var n = series.length;
+
+    function x(i) { return pad + i * (w - pad * 2) / (n - 1); }
+    function y(v) { return pad + (1 - (v - min) / range) * (h - pad * 2); }
+
+    ctx.beginPath();
+    ctx.moveTo(x(0), h);
+    for (var i = 0; i < n; i++) ctx.lineTo(x(i), y(series[i]));
+    ctx.lineTo(x(n - 1), h);
+    ctx.closePath();
+    ctx.fillStyle = withAlpha(color, 0.12);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(x(0), y(series[0]));
+    for (var j = 1; j < n; j++) ctx.lineTo(x(j), y(series[j]));
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 6;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  function recordSpark(key, value) {
+    var series = sparkState[key];
+    if (!series) return;
+    if (typeof value !== 'number' || !isFinite(value)) return;
+    series.push(value);
+    while (series.length > SPARK_MAX) series.shift();
+    drawSparkline(key);
+  }
+
+  function redrawAllSparks() {
+    drawSparkline('credits');
+    drawSparkline('spend');
+    drawSparkline('pi');
+  }
+
+  window.addEventListener('resize', redrawAllSparks);
+
+  applyBilling(window.BILLING);
+  if (live) {
+    setStatus('Live · auto-refresh every 2.5 min', 'live');
+    setInterval(function () { refresh(false); }, REFRESH_INTERVAL_MS);
+  } else {
+    idleStatus();
+  }
+
+  /* ── collapsible extra group ────────────────────────────────── */
+  var extraToggle = document.getElementById("extra-toggle");
+  var extraCards  = document.getElementById("extra-cards");
+  var extraOpen   = false;
+
+  document.getElementById("extra-count").textContent =
+    "(" + extraCards.querySelectorAll(".card").length + ")";
+
+  function setExtra(open) {
+    extraOpen = open;
+    extraCards.classList.toggle("collapsed", !open);
+    extraToggle.classList.toggle("expanded", open);
+    extraToggle.setAttribute("aria-expanded", String(open));
+  }
+
+  extraToggle.addEventListener("click", function () { setExtra(!extraOpen); });
+  extraToggle.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setExtra(!extraOpen);
+    }
+  });
+
+  /* ── collapsible spend sections (like Available platforms) ── */
+  function makeSectionToggle(toggleId, contentId, blobId) {
+    var toggle  = document.getElementById(toggleId);
+    var content = document.getElementById(contentId);
+    var blob    = blobId ? document.getElementById(blobId) : null;
+    var open    = true;
+
+    function setOpen(state) {
+      open = state;
+      content.classList.toggle("collapsed", !open);
+      toggle.classList.toggle("expanded", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      if (blob) blob.hidden = open;
+      redrawAllSparks();
+    }
+
+    toggle.addEventListener("click", function () { setOpen(!open); });
+    toggle.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setOpen(!open);
+      }
+    });
+    if (blob) blob.addEventListener("click", function () { setOpen(true); });
+    setOpen(true);
+  }
+
+  makeSectionToggle("spend-toggle", "spend-section", "spend-blob");
+  makeSectionToggle("pi-spend-toggle", "pi-spend-content", "pi-spend-blob");
+
+  /* ── card filter ────────────────────────────────────────────── */
+  var search = document.getElementById("search");
+  var empty  = document.getElementById("empty");
+  var cards  = Array.from(document.querySelectorAll(".card"));
+
+  function groupCollapsed(card) {
+    var group = card.closest(".cards");
+    return group && group.classList.contains("collapsed");
+  }
+
+  search.addEventListener("input", function () {
+    var query   = this.value.trim().toLowerCase();
+    var visible = 0;
+    cards.forEach(function (card) {
+      var show = card.dataset.name.includes(query) && !groupCollapsed(card);
+      card.classList.toggle("hidden", !show);
+      if (show) visible++;
+    });
+    empty.classList.toggle("show", visible === 0);
+  });
+
+  /* ── theme picker: auto + named palettes ───────────────────── */
+  var THEME_STORAGE = 'amsterdam.theme';
+  var T = window.AMS_THEMES;
+
+  function loadThemePref() {
+    var pref = 'auto';
+    try {
+      var saved = localStorage.getItem(THEME_STORAGE);
+      if (saved === 'auto' || T.THEMES[saved]) pref = saved;
+    } catch (e) {}
+    return pref;
+  }
+
+  function saveThemePref(pref) {
+    try { localStorage.setItem(THEME_STORAGE, pref); } catch (e) {}
+  }
+
+  function renderThemeUI(pref) {
+    var select = document.getElementById('theme-select');
+    if (select) select.value = pref;
+  }
+
+  function applyThemePref(pref) {
+    saveThemePref(pref);
+    window.__amsTheme.apply(T.effectiveTheme(pref, new Date()));
+    renderThemeUI(pref);
+  }
+
+  function buildThemeSelect() {
+    var select = document.getElementById('theme-select');
+    // The static 'auto' option is kept in the markup,
+    // so only append the dynamic theme list here.
+    T.listThemes().forEach(function (id) {
+      var opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = T.THEMES[id].label;
+      select.appendChild(opt);
+    });
+  }
+
+  buildThemeSelect();
+  renderThemeUI(loadThemePref());
+
+  document.getElementById('theme-select').addEventListener("change", function () {
+    applyThemePref(this.value);
+  });
+
+  // In auto mode, keep following the clock while the page stays open.
+  setInterval(function () {
+    if (loadThemePref() === 'auto') {
+      window.__amsTheme.apply(T.effectiveTheme('auto', new Date()));
+    }
+  }, 60000);
+</script>
+<script>
+  /* ── onboarding tour (demo mode) ────────────────────────────── */
+  // A short welcome for first-time visitors. It runs once per
+  // browser (localStorage) and can be replayed from the status line.
+  // Steps anchor to existing panels; a missing target degrades to a
+  // centered dialog.
+  (function () {
+    var TOUR_STORAGE = 'amsterdam.tourDone';
+    var root = document.getElementById('tour-root');
+    if (!root) return;
+    var box        = document.getElementById('tour-box');
+    var titleEl    = document.getElementById('tour-title');
+    var textEl     = document.getElementById('tour-text');
+    var progressEl = document.getElementById('tour-progress');
+    var prevBtn    = document.getElementById('tour-prev');
+    var nextBtn    = document.getElementById('tour-next');
+    var skipBtn    = document.getElementById('tour-skip');
+
+    var STEPS = [
+      { target: null,
+        title: 'Welcome to the Amsterdam Console',
+        text: 'One dashboard for every LLM billing console, with live balances and spend per model. You are looking at sample data — no keys, no accounts, nothing leaves your browser.' },
+      { target: '#theme-select',
+        title: 'Pick a theme',
+        text: 'Four bio-luminescent palettes. Auto follows the clock: solar by day, canal-city night after 20:00.' },
+      { target: '#credits',
+        title: 'Credits remaining',
+        text: 'The live sum of all provider balances, refreshed every 2.5 minutes. The split below shows where the money sits.' },
+      { target: '#billing-summary',
+        title: 'One chip per provider',
+        text: 'Balances, verified keys, and errors at a glance. Providers without a billing API take a manual balance — click edit on a verified chip.' },
+      { target: '#spend-section',
+        title: 'Spend by model',
+        text: 'Estimated and actual cost side by side. Click a column header to sort, use Columns to reshape the table, or filter to one model.' },
+      { target: '#search',
+        title: 'Filter providers',
+        text: 'Type to filter the cards live. Each card opens the provider console in a new tab.' },
+      { target: null,
+        title: 'Run it yourself',
+        text: 'Amsterdam is open source under the MIT license. Clone the repo, add your keys with hermes auth or a .env file, and run: amsterdam.' },
+    ];
+
+    var stepIndex   = 0;
+    var highlighted = null;
+    var lastFocus   = null;
+    var active      = false;
+
+    function tourDone() {
+      try { localStorage.setItem(TOUR_STORAGE, '1'); } catch (e) {}
+    }
+
+    function tourSeen() {
+      try { return localStorage.getItem(TOUR_STORAGE) === '1'; } catch (e) { return true; }
+    }
+
+    function clearHighlight() {
+      if (highlighted) {
+        highlighted.classList.remove('tour-highlight');
+        highlighted = null;
+      }
+    }
+
+    function positionBox(target) {
+      box.style.left = '';
+      box.style.top = '';
+      box.style.transform = '';
+      if (!target) {
+        box.style.left = '50%';
+        box.style.top = '50%';
+        box.style.transform = 'translate(-50%, -50%)';
+        return;
+      }
+      var rect = target.getBoundingClientRect();
+      var margin = 12;
+      var bw = box.offsetWidth;
+      var bh = box.offsetHeight;
+      var left = Math.min(Math.max(margin, rect.left), window.innerWidth - bw - margin);
+      if (left < margin) left = margin;
+      var top = rect.bottom + margin;
+      if (top + bh > window.innerHeight - margin) top = rect.top - bh - margin;
+      if (top < margin) top = Math.max(margin, (window.innerHeight - bh) / 2);
+      box.style.left = left + 'px';
+      box.style.top = top + 'px';
+    }
+
+    function showStep(i) {
+      stepIndex = i;
+      var step = STEPS[i];
+      clearHighlight();
+      var target = step.target ? document.querySelector(step.target) : null;
+      if (target && target.offsetParent !== null) {
+        target.classList.add('tour-highlight');
+        highlighted = target;
+        target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      } else {
+        target = null;
+      }
+      titleEl.textContent = step.title;
+      textEl.textContent = step.text;
+      progressEl.textContent = 'Step ' + (i + 1) + ' of ' + STEPS.length;
+      prevBtn.disabled = i === 0;
+      nextBtn.textContent = i === STEPS.length - 1 ? 'Done' : 'Next';
+      // Wait for the scroll to settle before measuring the target.
+      setTimeout(function () {
+        positionBox(highlighted);
+        box.focus();
+      }, 350);
+    }
+
+    function startTour() {
+      if (active) return;
+      active = true;
+      lastFocus = document.activeElement;
+      root.hidden = false;
+      showStep(0);
+    }
+
+    function endTour() {
+      active = false;
+      root.hidden = true;
+      clearHighlight();
+      tourDone();
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    nextBtn.addEventListener('click', function () {
+      if (stepIndex < STEPS.length - 1) showStep(stepIndex + 1); else endTour();
+    });
+    prevBtn.addEventListener('click', function () {
+      if (stepIndex > 0) showStep(stepIndex - 1);
+    });
+    skipBtn.addEventListener('click', endTour);
+
+    // The Replay tour button is re-rendered with the status line,
+    // so bind it by delegation.
+    document.addEventListener('click', function (e) {
+      if (e.target && e.target.id === 'tour-replay') startTour();
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (!active) return;
+      if (e.key === 'Escape') { endTour(); return; }
+      if (e.key === 'ArrowRight' && stepIndex < STEPS.length - 1) { showStep(stepIndex + 1); return; }
+      if (e.key === 'ArrowLeft' && stepIndex > 0) { showStep(stepIndex - 1); return; }
+      if (e.key === 'Tab') {
+        // Focus trap: cycle through the tour buttons.
+        var items = [skipBtn, prevBtn, nextBtn].filter(function (b) { return !b.disabled; });
+        var idx = items.indexOf(document.activeElement);
+        e.preventDefault();
+        var next = e.shiftKey
+          ? (idx <= 0 ? items[items.length - 1] : items[idx - 1])
+          : (idx === items.length - 1 ? items[0] : items[idx + 1]);
+        next.focus();
+      }
+    });
+
+    window.addEventListener('resize', function () {
+      if (active) positionBox(highlighted);
+    });
+
+    window.startTour = startTour;
+
+    // Auto-start once per browser in demo mode, after the first render.
+    if (window.AMS_DEMO && !tourSeen()) startTour();
+  })();
+</script>
+</body>
+</html>
