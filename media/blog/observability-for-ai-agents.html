@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evelyn Coronel — I put my AI agents on a dashboard</title>
+    <link rel="stylesheet" href="../../style.css">
+    <script src="../../theme.js"></script>
+</head>
+
+<body class="about">
+    <div class="container">
+        <div class="overlay">
+            <header>
+                <div class="nav-header">
+                    <div class="site-brand">
+                        <h2>Evelyn Coronel</h2>
+                        <span class="page-tagline office-tagline">Professional — physicist, ML engineer</span>
+                    </div>
+                    <nav class="nav-links">
+                        <a href="../../home.html">Personal</a>
+                        <a href="../../about.html" class="active">Professional</a>
+                        <button class="theme-toggle" type="button" hidden>Light</button>
+                    </nav>
+                </div>
+
+                <p><a class="blog-back" href="../../about.html">&larr; back to the office</a></p>
+
+                <h1 class="writing-title">I put my AI agents on a dashboard — and found out what they cost</h1>
+                <p class="writing-meta">Aug 2026 &middot; agent orchestration, LLM telemetry, observability</p>
+            </header>
+        </div>
+
+        <div class="overlay">
+            <div class="writing-body">
+
+                <p>
+                    In the <a href="divabot-one-brain-every-channel.html">DivaBot post</a> I argued that a
+                    model alone is not an assistant — it is a function you call, and the engineering around
+                    it is yours. Then I kept going and built an entire fleet. Four different AI agents now
+                    live on my handheld PC, each from a different vendor, each with its own storage format
+                    and its own way of quietly being wrong: an orchestrator brain (Hermes), a coding agent
+                    (Pi), an experimentation harness (DeepSeek Harness), and a design agent (OpenDesign).
+                    They run 24/7 and they do real work: code reviews, PRs, experiments, even this website.
+                </p>
+                <p>
+                    And then I hit the question that always ends my honeymoon with any system: <em>what does
+                    this actually cost me?</em> I could tell you what my agents do. I could not tell you
+                    what they cost. So I built telemetry for them — and what the data caught was worth more
+                    than the dashboard itself.
+                </p>
+
+                <h3>The fleet</h3>
+                <p>
+                    The agents are heterogeneous on purpose, and they all have names — after the
+                    orchestrator started talking to me like Moria Casán, I began calling them "Divos".
+                    Hermes is the orchestrator brain, my Moria: it plans, routes, reviews and verifies. Pi
+                    is the coding agent, bound to strict clean-code guidelines. DeepSeek Harness runs
+                    experiments with presets — including two agents modeled on Diego Maradona (Red Hat and
+                    Blue Hat, El Pibe de Oro) that pentest everything I push to GitHub before it ships.
+                    OpenDesign generates repos for web design. They talk to different models, store their
+                    sessions in different formats (SQLite, JSONL, zstd-compressed JSONL), and none of them
+                    knows the others exist. Orchestration is a human job: I decide who does what, I review
+                    what comes back, and the agents never get to merge their own PRs.
+                </p>
+                <p>
+                    That arrangement is great for reliability and terrible for visibility. Four agents,
+                    four billing surfaces, four stores. The only way to know the fleet was healthy was to
+                    build the layer none of them ships: a metrics pipeline with one adapter per agent.
+                </p>
+
+                <h3>One adapter per agent, one event shape out</h3>
+                <p>
+                    Each agent has a small adapter that reads its own store and emits normalized events.
+                    Everything downstream — a dedup wrapper, the Pushgateway, Prometheus, Grafana — only
+                    speaks this one shape:
+                </p>
+<pre class="writing-code"># one adapter per agent, same event shape out
+{
+    "agent": "pi",            # who ran
+    "session_id": "2026-08-21T…",
+    "model": "deepseek-v4-flash",
+    "tokens_in": 1200,
+    "tokens_out": 340,
+    "cost_usd": 0.0009,       # estimated, off-peak prices
+    "task": "fix dedup bug",
+}</pre>
+                <p>
+                    A systemd timer wakes the sync every 15 minutes, runs the four adapters, and pushes
+                    totals to a Pushgateway. It is idempotent by design: a failed run spools its events and
+                    the next run drains them, so a crash never loses billing data. Grafana turns the result
+                    into 14 panels: cost and tokens per agent, per model, per day, and per time range.
+                    Today the dashboard reports 273 sessions, 884 million tokens, and a total of $52.13
+                    across all four agents — less than a month of agent labor for less than a dinner.
+                </p>
+
+                <h3>The bugs the data caught</h3>
+                <p>
+                    The dashboard is nice. The bugs it caught are the reason it exists. Three, all real,
+                    all invisible without metrics:
+                </p>
+                <p>
+                    <strong>A trailing slash zeroed 158 sessions.</strong> Hermes recorded DeepSeek usage
+                    with a base URL ending in <code>https://api.deepseek.com/v1/</code> — with the slash.
+                    The pricing matcher expected no slash. Every one of those sessions had its tokens
+                    counted and its cost silently set to zero. Not a crash, not an error: a quiet
+                    undercount. The fix was a local price table in the adapter, applied to any row whose
+                    cost was cleanly zero.
+                </p>
+                <p>
+                    <strong>Dedup was eating real money.</strong> The wrapper deduplicates events on
+                    (agent, session, model), but the Hermes adapter emitted one event per
+                    (agent, session, model, provider, task). Whenever a session had both a priced row and
+                    an estimated row, the whole event vanished — about $0.34 per sync, forever. The
+                    contract was ambiguous, so the pipeline lied in the least visible direction. Fix: one
+                    event per (session, model), merging rows, and a contract test that asserts zero
+                    duplicates.
+                </p>
+                <p>
+                    <strong>Prometheus itself overcounts resets.</strong> A poisoned snapshot once pushed a
+                    $1,252 spike, and <code>increase()</code> reads any reset as spend — it painted a fake
+                    $64 day. The correct "spend in this range" for a cumulative gauge is a delta against
+                    the start of the range, clamped so resets can never invent money:
+                </p>
+<pre class="writing-code">sum by (agent) (
+  clamp_min(
+    agent_cost_usd_total - (agent_cost_usd_total offset $__range),
+    0
+  )
+)</pre>
+                <p>
+                    All three bugs share a moral: the numbers are never wrong in the loud way. They are
+                    wrong in the quiet way — a missing slash, an ambiguous key, a metric that resets. The
+                    agent is not lying; it has no intention at all. The pipeline is what lies, and only
+                    verification catches it.
+                </p>
+
+                <h3>Transcripts, not just numbers</h3>
+                <p>
+                    Metrics tell you the fleet is alive. To know what it actually <em>did</em>, I upload
+                    each agent's full session log to MLflow as a run artifact — 113 sessions with complete
+                    conversations, verified byte-for-byte against the original files. That is the part I
+                    care about as an engineer: when a PR is wrong, I do not ask the agent to explain
+                    itself. I read its transcript, like logs. Everything stays local; session content
+                    never leaves the machine, which is exactly how I would want someone else's agent fleet
+                    to treat my data.
+                </p>
+
+                <h3>What running this taught me</h3>
+                <ul>
+                    <li>
+                        Orchestration is a human job with a new center of gravity: not writing the code,
+                        but designing the system and verifying the output. Pi writes, I verify. A
+                        self-report is not evidence — tests, smoke runs and byte-for-byte diffs are.
+                    </li>
+                    <li>
+                        Agent costs are real and they grow silently. Without a dashboard, "a few cents of
+                        API calls" becomes "I have no idea", and "I have no idea" is where budgets die.
+                    </li>
+                    <li>
+                        Contracts beat trust. The dedup bug was not a code bug, it was a contract bug: the
+                        event shape was ambiguous and the pipeline resolved the ambiguity by losing money.
+                        Define the shape, then test the shape.
+                    </li>
+                    <li>
+                        Your metrics can lie too. A dashboard is a claim about the world, and claims need
+                        validation — the poisoned spike and the $64 ghost were caught by checking the
+                        numbers against the source, not by believing the panel.
+                    </li>
+                </ul>
+
+                <h3>Measurement is the reliable choice</h3>
+                <p>
+                    The DivaBot post ended with "the reliable choice, again": an architecture where the
+                    model is swappable and the engineering is yours. This is that lesson taken one level
+                    up. The engineering around your agents — how you route them, how you review them, how
+                    you measure them — is the only part of the stack you actually own. The models will be
+                    replaced; the pipeline you build around them is what survives. If you run agents and
+                    you cannot tell me what they cost, you do not know your own stack. Now I do — to the
+                    cent.
+                </p>
+
+            </div>
+        </div>
+
+        <footer class="site-footer">
+            <span>paraguadiosa</span>
+            <span>&middot;</span>
+            <span>evecoronel.com</span>
+        </footer>
+    </div>
+</body>
+</html>
