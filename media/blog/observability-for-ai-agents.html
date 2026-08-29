@@ -98,6 +98,11 @@
                     events. Everything downstream (a dedup wrapper, the Pushgateway, Prometheus,
                     Grafana) only speaks this one shape:
                 </p>
+
+                <figure class="writing-figure">
+                    <img class="writing-image" src="diagrams/observability.svg" alt="Agent telemetry pipeline">
+                    <figcaption>One adapter per agent, one event shape out.</figcaption>
+                </figure>
 <pre class="writing-code"># one adapter per agent, same event shape out
 {
     "agent": "pi",            # who ran

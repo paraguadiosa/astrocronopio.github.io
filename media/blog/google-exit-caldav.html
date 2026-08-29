@@ -55,7 +55,16 @@
 
                 <h3>The migration</h3>
                 <p>
-                    Same pipeline instinct as adtech: idempotent by key, dry-run first, verify after.
+                    The migration is the same pipeline instinct as adtech: idempotent by key,
+                    dry-run first, verify after:
+                </p>
+
+                <figure class="writing-figure">
+                    <img class="writing-image" src="diagrams/google-exit.svg" alt="Google Exit migration flow">
+                    <figcaption>Export, migrate, verify, retire.</figcaption>
+                </figure>
+
+                <p>
                     Live numbers today: 4,531 events in <code>eve/work/</code>, 608 tasks in
                     <code>eve/tasks/</code>.
                 </p>
