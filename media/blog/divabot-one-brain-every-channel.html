@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evelyn Coronel — DivaBot: one brain, every channel</title>
+    <title>Evelyn Coronel | DivaBot: one brain, every channel</title>
     <link rel="stylesheet" href="../../style.css">
     <script src="../../theme.js"></script>
 </head>
@@ -82,7 +82,7 @@ lambda data: data["choices"][0]["message"]["content"].strip()</pre>
                     exactly why the API can win without a rewrite.
                 </p>
 
-                <h3>Retries, because servers have bad days</h3>
+                <h3>Retries, because servers fail</h3>
                 <p>
                     Every request goes through a retry loop with exponential backoff:
                     <code>sleep(2**attempt)</code>, so 1s, then 2s, then give up and raise a clear error.
@@ -97,8 +97,7 @@ lambda data: data["choices"][0]["message"]["content"].strip()</pre>
                 <h3>What building this taught me</h3>
                 <ul>
                     <li>
-                        The model is the commodity, the engineering around it is yours. Two platforms,
-                        one brain, either local or remote without touching the frontends.
+                        The model is the commodity, the engineering around it is yours. Two platforms, either local or remote without touching the frontends.
                     </li>
                     <li>
                         Do not block the event loop. The LLM call is synchronous, so the Discord handler
