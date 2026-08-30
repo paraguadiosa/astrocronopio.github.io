@@ -39,6 +39,8 @@
                     question was: what happens when the Win Mini sleeps? So I gave the fleet a second
                     home: a Raspberry Pi 3B+ with one gigabyte of RAM, named jacinto.
                 </p>
+                <!-- [IMG] Foto del Pi 3B+ fisico (jacinto) en su lugar: SD 59,5G, conectado a la LAN. Screenshot/photo -> media/blog/screenshots/jacinto-pi-photo.jpg -->
+                <!-- [SCHEMA] Topologia: Win Mini (100.95.188.29) <-> Pi (100.99.112.42), Syncthing bidireccional (vault 8,617 files + backups), node_exporter -> Prometheus -> jacinto-health. Archivo sugerido: diagrams/jacinto-topology.svg -->
 
                 <h3>Why it works</h3>
                 <p>
@@ -79,6 +81,7 @@
                     Pushgateway answer from the Pi when the Win Mini sleeps. One-gigabyte budget: zram
                     swap, Bluetooth off, journald capped.
                 </p>
+                <!-- [IMG] Screenshot del dashboard jacinto-health (14 panels, Prometheus scraping al Pi): media/blog/screenshots/jacinto-health-dashboard.png -->
 
                 <h3>What it taught me</h3>
                 <ul>

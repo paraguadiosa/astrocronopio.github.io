@@ -59,6 +59,7 @@
     if PROVIDER == "deepseek":
         return _ask_deepseek(prompt)
     return _ask_local(prompt)</pre>
+                <!-- [SCHEMA] Arquitectura "one brain, many channels": frontends (Discord, CLI, futuro Telegram) -> ask_llm() -> providers (DeepSeek API, llama.cpp local). Render mermaid a SVG: npx -y @mermaid-js/mermaid-cli -i <x>.mmd -o <x>.svg. Archivo sugerido: diagrams/divabot-architecture.svg -->
                 <p>
                     This is the same instinct I use at work: the model is the part that changes (or
                     gets replaced), so it must be the part that is easy to swap.
