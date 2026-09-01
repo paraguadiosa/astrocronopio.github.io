@@ -43,25 +43,23 @@
                     Several agents across two machines, each from a different vendor, each with its own
                     storage format. They run 24/7 and they do real work: code reviews, PRs,
                     experiments, pentests, even this website.
-                    <li>
-                        Mini: The handheld PC that runs the orchestrator, Hermes, and the coding agent, Pi.
-                    </li>
-                    <li>
-                        Jacinto: A Raspberry Pi that runs a second Hermes and acts as my ops console
-                    for everything I host there.
-                    </li>
-
-                    <figure class="writing-figure">
-                        <img class="writing-image" src="screenshots/screenshot_20260831_233934.png" alt="Grafana Agent Telemetry dashboard: spend by server (mini $80.98, jacinto $0.54), by orchestrator (pi $69.69, hermes $9.86, dsh $1.73, open-design $0.24), and cost per 1M tokens per model">
-                        <figcaption>Agent Telemetry: spend by server, by orchestrator, and per model.</figcaption>
-                    </figure>
                 </p>
-
-
-
+                <ul>
+                    <li>
+                        <strong>Mini</strong>: the handheld PC that runs the orchestrator, Hermes, and the coding agent, Pi.
+                    </li>
+                    <li>
+                        <strong>Jacinto</strong>: a Raspberry Pi that runs a second Hermes and acts as my ops console
+                        for everything I host there.
+                    </li>
+                </ul>
+                <figure class="writing-figure">
+                    <img class="writing-image" src="screenshots/screenshot_20260831_233934.png" alt="Grafana Agent Telemetry dashboard: spend by server (mini $80.98, jacinto $0.54), by orchestrator (pi $69.69, hermes $9.86, dsh $1.73, open-design $0.24), and cost per 1M tokens per model">
+                    <figcaption>Agent Telemetry: spend by server, by orchestrator, and per model.</figcaption>
+                </figure>
                 <p>
                     I could tell you what my agents do. I could not tell you what they cost. So I built
-                    telemetry for them. Defense of this: it is not AI Psycosis, it is architecture.
+                    telemetry for them. This is not AI psychosis. It is architecture.
                 </p>
 
                 <h3>The fleet</h3>
@@ -73,7 +71,7 @@
                 <ul>
                     <li>
                         <strong>Hermes in Mini</strong>: the orchestrator brain, my Moria. It plans, routes,
-                        reviews and verifies, and it talks to me like a diva. Main drive: Deepseek v4 Flash.
+                        reviews and verifies, and it talks to me like a diva. Main drive: DeepSeek v4 Flash.
                     </li>
                     <li>
                         <strong>Pi in Mini</strong>: the coding agent, bound to strict clean-code guidelines.
@@ -81,13 +79,15 @@
                     </li>
                     <li>
                         <strong>DeepSeek Harness</strong>: the experimentation rig. It ships two
-                        agents modeled on Diego Maradona, Ipentest everything I push to GitHub before it goes live: 
-                        <li>
-                            Red Hat - El Diego sin Filtro: It hacks into everything, and I review the results.
-                        <li>
-                            Blue Hat - El Pibe de Oro: It is a security agent that reviews the results of Red Hat and filters them. 
-                        </li>
-
+                        agents modeled on Diego Maradona. I pentest everything I push to GitHub before it goes live:
+                        <ul>
+                            <li>
+                                <strong>Red Hat — El Diego sin Filtro</strong>: it hacks into everything, and I review the results.
+                            </li>
+                            <li>
+                                <strong>Blue Hat — El Pibe de Oro</strong>: a security agent that reviews the results of Red Hat and filters them.
+                            </li>
+                        </ul>
                     </li>
                     <li>
                         <strong>OpenDesign</strong>: the web design agent. It generates repos, and parts of this site were born there.
@@ -96,9 +96,11 @@
                         <strong>jacinto</strong>: a second Hermes living on a Raspberry Pi, with its
                         own Discord bot that acts as my ops console for everything I host there. The
                         full story is <a href="jacinto-raspberry-pi.html">its own post</a>.
-                    </li>
-                    <li>
-                        Pi in Jacinto: a second coding agent, bound to the same strict clean-code guidelines in Mini.
+                        <ul>
+                            <li>
+                                <strong>Pi in Jacinto</strong>: a second coding agent, bound to the same strict clean-code guidelines as Pi in Mini.
+                            </li>
+                        </ul>
                     </li>
                 </ul>
                 <p>
@@ -185,7 +187,7 @@
                 <h3>What running this taught me</h3>
                 <ul>
                     <li>
-                        Orchestration is a human job with a new center of gravity: not writing the
+                        Orchestration is a human job: not writing the
                         code, but designing the system and verifying the output. Pi writes, I verify.
                     </li>
                     <li>
@@ -207,7 +209,7 @@
                 <h3>Measurement is the reliable choice</h3>
                 <p>
                     The engineering around your agents is the only part of the stack you actually
-                    own. The models will be replaced; the pipeline you build around them is what
+                    own. The models will be replaced but the pipeline you build around them is what
                     survives. If you run agents and you cannot tell me what they cost, you do not know
                     your own stack.
                 </p>
