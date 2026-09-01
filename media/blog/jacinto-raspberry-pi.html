@@ -39,8 +39,10 @@
                     question was: what happens when the Win Mini sleeps? So I gave the fleet a second
                     home: a Raspberry Pi 3B+ with one gigabyte of RAM, named jacinto.
                 </p>
-                <!-- [IMG] Foto del Pi 3B+ fisico (jacinto) en su lugar: SD 59,5G, conectado a la LAN. Screenshot/photo -> media/blog/screenshots/jacinto-pi-photo.jpg -->
-                <!-- [SCHEMA] Topologia: Win Mini (100.95.188.29) <-> Pi (100.99.112.42), Syncthing bidireccional (vault 8,617 files + backups), node_exporter -> Prometheus -> jacinto-health. Archivo sugerido: diagrams/jacinto-topology.svg -->
+                <figure class="writing-figure">
+                    <img class="writing-image" src="screenshots/jacinto.webp" alt="Jacinto">
+                    <figcaption> Jacinto vibing but not just vibecoding. </figcaption>
+                </figure>
 
                 <h3>Why it works</h3>
                 <p>
@@ -55,8 +57,7 @@
                     the MAC (<code>b8:27:eb:…</code>) before trusting anything. And the modern Pi OS
                     ignores the <code>country=</code> line in <code>wpa_supplicant.conf</code>: Wi-Fi
                     stays rfkill-blocked until <code>raspi-config nonint do_wifi_country</code>.
-                </p>
-
+                </p>            
                 <h3>A second Hermes</h3>
                 <p>
                     The install kept dying with the SSH tunnel, so it runs under
@@ -73,6 +74,12 @@
                     the same way.
                 </p>
 
+                <figure class="writing-figure">
+                    <img class="writing-image" src="screenshots/jacinto.webp" alt="placeholder">
+                    <figcaption> improve  </figcaption>
+                </figure>
+
+        
                 <h3>The mirror</h3>
                 <p>
                     Twelve repos cloned over SSH (by rule, bidirectional), Syncthing keeps the vault
@@ -82,6 +89,11 @@
                     swap, Bluetooth off, journald capped.
                 </p>
                 <!-- [IMG] Screenshot del dashboard jacinto-health (14 panels, Prometheus scraping al Pi): media/blog/screenshots/jacinto-health-dashboard.png -->
+
+                <figure class="writing-figure">
+                    <img class="writing-image" src="screenshots/jacinto.webp" alt="placeholder">
+                    <figcaption> improve  </figcaption>
+                </figure>
 
                 <h3>What it taught me</h3>
                 <ul>
