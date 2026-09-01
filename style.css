@@ -664,6 +664,19 @@ h2.writing-title {
     margin-top: 12px;
 }
 
+/* Wide diagrams: on small screens keep text readable by letting the
+   figure scroll horizontally instead of shrinking to an unreadable size. */
+@media (max-width: 900px) {
+    .writing-figure {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .writing-image[src$=".svg"] {
+        min-width: 1400px;
+        max-width: none;
+    }
+}
+
 /* ---------- Footer ---------- */
 .site-footer {
     display: flex;

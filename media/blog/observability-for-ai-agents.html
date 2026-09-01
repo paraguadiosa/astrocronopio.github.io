@@ -50,6 +50,11 @@
                         Jacinto: A Raspberry Pi that runs a second Hermes and acts as my ops console
                     for everything I host there.
                     </li>
+
+                    <figure class="writing-figure">
+                        <img class="writing-image" src="screenshots/screenshot_20260831_233934.png" alt="Grafana Agent Telemetry dashboard: spend by server (mini $80.98, jacinto $0.54), by orchestrator (pi $69.69, hermes $9.86, dsh $1.73, open-design $0.24), and cost per 1M tokens per model">
+                        <figcaption>Agent Telemetry: spend by server, by orchestrator, and per model.</figcaption>
+                    </figure>
                 </p>
 
 
@@ -136,13 +141,6 @@
                     pushes totals to a Pushgateway. It is idempotent by design: a failed run spools
                     its events and the next run drains them, so a crash never loses billing data.
                 </p>
-                <p>
-                    Grafana turns the result into 14 panels: cost and tokens per agent, per model, per
-                    day, and per time range. Today the dashboard reports 273 sessions, 884 million
-                    tokens, and a total of $52.13 across all five agents. Less than a month of agent
-                    labor for less than a dinner.
-                </p>
-                <!-- [IMG] Screenshot del dashboard de Grafana (14 panels, el total $52.13 visible). ES LA IMAGEN ESTRELLA DEL POST: media/blog/screenshots/agent-telemetry-dashboard.png -->
 
                 <h3>The bugs the data caught</h3>
                 <p>
@@ -213,6 +211,11 @@
                     survives. If you run agents and you cannot tell me what they cost, you do not know
                     your own stack.
                 </p>
+
+                <figure class="writing-figure">
+                    <img class="writing-image" src="screenshots/pasted-image-20260901000607.webp" alt="The physical fleet: the mini handheld PC (left), a Raspberry Pi named Jacinto (top right), and a jailbroken Kindle (bottom right).">
+                    <figcaption>The actual boxes: the mini handheld, the Pi (Jacinto), and a jailbroken Kindle on the tailnet.</figcaption>
+                </figure>
 
             </div>
         </div>
