@@ -100,12 +100,7 @@ sum(claude_code_cost_usage_total)
 
 # RIGHT: increase() handles counter resets
 sum(increase(claude_code_cost_usage_total[$__range]))</pre>
-                <p>
-                    The mirror with home (previous post): the same Prometheus lies in both directions
-                    depending on the metric type. At home the wrapper pushes a cumulative gauge (totals)
-                    and increase() INVENTED money when a push corrected values (the x10 spike day, a
-                    phantom $1,252). Here the native counter makes sum() LOSE money. 
-                </p>
+
                 <p>
                     Lesson: the correct query depends on the metric type, not on what sounds right.
                 </p>
@@ -114,14 +109,10 @@ sum(increase(claude_code_cost_usage_total[$__range]))</pre>
                 <p>
                     <code>pushgateway-preview.&lt;company&gt;.com</code>: test the full pipeline without
                     touching prod. The dashboard "Claude Code - Usage & Cost" on staging Grafana came
-                    alive with real smoke test data.
+                    alive with real smoke test data. I prefer not to post a screenshot of my work grafana,
+                    but the dashboard is a good enough monitoring of my usage, I splited by project
+                    and model, and it is already useful.
                 </p>
-                <p>
-                    Verified numbers (last 3h): $3.92, 5.63M tokens, 9.8 min active. Split by model
-                    (claude-sonnet-5, claude-haiku-4-5-20251001) and by query_source (main vs auxiliary).
-                </p>
-                <!-- [IMG] Screenshot del dashboard de Grafana staging "Claude Code - Personal Usage (Eve)": total $3.92 / 5.63M tokens / 9.8 min visible, split por modelo y query_source. media/blog/screenshots/claude-code-cost-dashboard.png -->
-
                 <h3>Lessons</h3>
                 <ul>
                     <li>
@@ -139,15 +130,10 @@ sum(increase(claude_code_cost_usage_total[$__range]))</pre>
                         dashboard showed 10% of the real spend.
                     </li>
                     <li>
-                        The data was already there. Visibility is not building telemetry, it is daring to
-                        look at what your tools already emit.
+                        The data was already there. Visibility is not building telemetry, it is looking
+                        at what your tools already emit.
                     </li>
                 </ul>
-
-                <p>
-                    The phrase from the previous post, on a different field: "Measurement is the reliable
-                    choice." At home I built it. At work I just had to read it correctly.
-                </p>
             </div>
         </div>
 
