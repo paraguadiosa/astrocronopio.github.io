@@ -574,6 +574,11 @@ h2.writing-title {
     margin-bottom: 0;
 }
 
+.writing-body li ul,
+.writing-body li ol {
+    margin: 0.45em 0 0.15em;
+}
+
 .writing-body h3 {
     color: var(--accent);
     font-size: 1.12em;
