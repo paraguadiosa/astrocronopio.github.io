@@ -410,7 +410,7 @@ button:focus-visible {
     color: var(--color-text);
     text-decoration: none;
     font-family: var(--font-display);
-    font-size: 1.05em;
+    font-size: clamp(1rem, 0.95rem + 0.4vw, 1.2rem);
     line-height: 1.5;
     margin-right: auto;
     min-width: 0;
@@ -558,6 +558,22 @@ h2.writing-title {
     text-indent: 0;
 }
 
+.writing-body ul,
+.writing-body ol {
+    margin: 0 0 1.6em;
+    padding-left: 1.5em;
+}
+
+.writing-body li {
+    font-size: clamp(1rem, 0.95rem + 0.4vw, 1.2rem);
+    line-height: 1.8;
+    margin-bottom: 0.65em;
+}
+
+.writing-body li:last-child {
+    margin-bottom: 0;
+}
+
 .writing-body h3 {
     color: var(--accent);
     font-size: 1.12em;
@@ -698,10 +714,6 @@ h2.writing-title {
         padding-block: 12px;
     }
 
-    .writing-link {
-        font-size: 1.03em;
-    }
-
     .writing-date {
         font-size: 0.68rem;
     }
@@ -714,10 +726,6 @@ h2.writing-title {
 
     .writing-list > li:not(.writing-divider) {
         gap: 2px 12px;
-    }
-
-    .writing-link {
-        font-size: 1em;
     }
 
     .page-tagline {
