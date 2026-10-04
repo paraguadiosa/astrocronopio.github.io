@@ -1,15 +1,18 @@
 # evecoronel.com
 
-Personal and professional website of Evelyn Coronel. Static HTML, one shared
-stylesheet, no build step.
+Professional website of Evelyn Coronel. The personal half (home and writings) lives
+at https://paraguadiosa.com, in its own repo. Static HTML, one shared stylesheet, no
+build step.
 
 ## Structure
 
 - `index.html` redirects to `about.html`.
-- `home.html` is the personal side. `about.html` is the professional side.
-- `media/writings/` holds personal texts. `media/blog/` holds tech posts.
-  `media/blog/one-month-of-learning.html` is the day-by-day log of the 2026
-  learning month; entries are hand-maintained and dated by first commits.
+- `about.html` is the professional side: bio, CV and tech blog.
+- `media/blog/` holds the tech posts. `media/blog/one-month-of-learning.html` is the
+  day-by-day log of the 2026 learning month; entries are hand-maintained and dated by
+  first commits.
+- Nothing personal lives here anymore, on purpose: the personal side moved to
+  paraguadiosa.com and this repo only keeps the professional surface.
 - `style.css` styles every page. `version.js` prints version and date by
   reading `version.json`, which `gen-version.sh` regenerates from git.
 - `theme.js` runs the light and dark theme toggle.
@@ -48,6 +51,6 @@ All colors live in CSS custom properties on `:root` in `style.css`.
 
 ## Backgrounds
 
-Each page sets its own wallpaper with a body class: `body.home`,
-`body.about`, and `body.writing`, all in `style.css`. New pages can add
-another class there.
+Each page sets its own wallpaper with a body class. This repo only uses
+`body.about` now: the personal `body.home` and `body.writing` classes stay in
+`style.css` because the same stylesheet is shared with paraguadiosa.com.
